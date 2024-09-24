@@ -3,13 +3,13 @@ import {DataClient} from "../models/DataClient";
 
 
 export class DataService {
-    private dataClient: DataClient;
+    private dataClient = new HTTPDataClient();
     private teams: Team[] = [];
     private events: NFLEvent[] = [];
 
 
-    constructor(dataClient: DataClient) {
-        this.dataClient = dataClient;
+    constructor() {
+        // this.dataClient = dataClient;
         this.initialize().then(() => console.log(this.teams));
     }
 
