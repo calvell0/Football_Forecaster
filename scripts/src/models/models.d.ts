@@ -14,6 +14,7 @@ export interface Team {
 export interface TeamResponseObject {
     team: Team;
 }
+
 export interface NFLEventResponseObject {
 
 }
