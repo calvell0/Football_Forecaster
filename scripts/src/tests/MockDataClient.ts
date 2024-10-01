@@ -11,7 +11,7 @@ export class MockDataClient implements DataClient {
 
     async getAllTeams(): Promise<any> {
         const teams: Team[] =[];
-        teamData.sports[0].leagues[0].teams.forEach((team: TeamResponseObject) => {
+        teamData.sports[0].leagues[0].teams.forEach((team) => {
             teams.push(team.team);
         });
         return teams;

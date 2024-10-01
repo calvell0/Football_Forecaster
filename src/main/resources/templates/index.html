@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Football Forecaster</title>
-    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" th:href="@{/styles/styles.css}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/flatpickr/4.6.9/flatpickr.min.css">
 </head>
 
@@ -17,7 +17,7 @@
     <main>
 
         <div class="image-section">
-            <img src="football image.jpeg" alt="Football image" class="football-image">
+            <img th:src="@{/styles/images/football image.jpeg}" alt="Football image" class="football-image">
         </div>
 
         <div class="container">
