@@ -3,26 +3,26 @@ import {DataClient} from "../models/DataClient";
 
 
 export class DataService {
-    private dataClient = new HTTPDataClient();
+    private dataClient: DataClient;
     private teams: Team[] = [];
     private events: NFLEvent[] = [];
 
 
-    constructor() {
-        // this.dataClient = dataClient;
+    constructor(dataClient: DataClient) {
+        this.dataClient = dataClient;
         this.initialize().then(() => console.log(this.teams));
     }
 
     public async initialize(): Promise<void> {
         await this.dataClient.getAllTeams();
         await this.getRawEventData();
-        console.log(this.events);
-        //this.games = await this.dataClient.getAllGames();
+        // console.log(this.events);
+
     }
 
     public async getRawTeamData(): Promise<void> {
-        const teamData: Team[] = await this.dataClient.getAllTeams();
-
+        const teamData = await this.dataClient.getAllTeams();
+        // console.log(teamData);
         for (let team of teamData) {
             this.teams.push({
                 id: team.id,

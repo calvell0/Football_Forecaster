@@ -25,16 +25,17 @@ export class HttpDataClient implements DataClient {
     }
 
     async getAllTeams(): Promise<any> {
-        const teams: Team[] = [];
+        const teams= [];
         const response = await axios.get(this.API_BASE_URL + "teams")
             .catch((error: any) => {
                 console.error(error);
             });
-        //console.log(response.data.sports[0].leagues[0].teams);
-        response.data.sports[0].leagues[0].teams.forEach((team: TeamResponseObject) => {
+        // console.log(response.data.sports[0].leagues[0].teams);
+
+        response.data.sports[0].leagues[0].teams.forEach((team) => {
             teams.push(team.team);
         });
-
+        // console.log(teams);
         return teams;
 
     }
