@@ -1,8 +1,11 @@
-import {DataService} from "./services/DataService";
-import {HttpDataClient} from "./HTTPDataClient";
+import {DataService} from "./services/DataService.js";
+import {HttpDataClient} from "./HTTPDataClient.js";
+import {init} from "./db/init.js";
 
 
-const dataService = new DataService(new HttpDataClient());
+await init();
+
+//const dataService = new DataService(new HttpDataClient());
 
 
 

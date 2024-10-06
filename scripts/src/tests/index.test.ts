@@ -1,8 +1,8 @@
-import {DataService} from "../services/DataService";
-import {MockDataClient} from "./MockDataClient";
+import {DataService} from "../services/DataService.js";
+import {MockDataClient} from "./MockDataClient.js";
 import assert from "node:assert";
 import test from "node:test";
-import {HttpDataClient} from "../HTTPDataClient";
+import {HttpDataClient} from "../HTTPDataClient.js";
 
 
 const dataService = new DataService(new HttpDataClient());
