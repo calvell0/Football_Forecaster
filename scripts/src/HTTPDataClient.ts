@@ -1,5 +1,5 @@
-import {NFLEvent, Team, TeamResponseObject} from "./models/models";
-import {DataClient} from "./models/DataClient";
+import {NFLEvent, Team, TeamResponseObject} from "./models/models.js";
+import {DataClient} from "./models/DataClient.js";
 const axios = require("axios");
 
 

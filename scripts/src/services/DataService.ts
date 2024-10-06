@@ -1,5 +1,5 @@
-import {NFLEvent, Team, Record, Competition, Competitor} from "../models/models";
-import {DataClient} from "../models/DataClient";
+import {NFLEvent, Team, Record, Competition, Competitor} from "../models/models.d.js";
+import {DataClient} from "../models/DataClient.js";
 
 
 export class DataService {

@@ -1,5 +1,5 @@
-import {DataClient} from "../models/DataClient";
-import {Team, TeamResponseObject} from "../models/models";
+import {DataClient} from "../models/DataClient.js";
+import {Team, TeamResponseObject} from "../models/models.js";
 import teamData from "./test_data/teams.json";
 import eventData from "./test_data/events.json";
 
