@@ -5,7 +5,9 @@ import {init} from "./db/init.js";
 
 await init();
 
-//const dataService = new DataService(new HttpDataClient());
+const dataService = await DataService.build(new HttpDataClient());
+console.log("Saving teams to db...");
+await dataService.persistTeams();
 
 
 

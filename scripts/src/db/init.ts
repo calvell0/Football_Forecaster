@@ -29,7 +29,7 @@ export const connect = async (): Promise<Connection> => {
 }
 
 export const init = async () => {
-   const host = await connect();
+    const host = await connect();
 
     await host.query(`
         DROP DATABASE IF EXISTS nfl_data
@@ -58,14 +58,6 @@ export const init = async () => {
         );
     `);
 
-    await host.query(`
-        CREATE TABLE IF NOT EXISTS Venue
-        (
-            id        SMALLINT NOT NULL PRIMARY KEY,
-            full_name VARCHAR(255),
-            indoor    BIT
-        );
-    `);
 
     await host.query(`
         CREATE TABLE IF NOT EXISTS NFL_Event
@@ -73,15 +65,15 @@ export const init = async () => {
             id                     VARCHAR(20) PRIMARY KEY,
             uid                    VARCHAR(60),
             date                   DATETIME,
-            shortName              VARCHAR(20),
+            short_name             VARCHAR(20),
             season_year            SMALLINT,
             competition_type       SMALLINT,
             conference_competition BIT,
             neutral_site           BIT,
             venue                  SMALLINT,
-            home_team              INT NOT NULL,
-            away_team              INT NOT NULL,
-            FOREIGN KEY (venue) REFERENCES Venue (id)
+            home_team              INT,
+            away_team              INT,
+            venue_id               INT
         );
     `);
 
@@ -89,8 +81,8 @@ export const init = async () => {
         CREATE TABLE IF NOT EXISTS Competitor
         (
             instance_id  INT AUTO_INCREMENT PRIMARY KEY NOT NULL,
-            team_id      varchar(5)  NOT NULL,
-            event_id     varchar(20) NOT NULL,
+            team_id      varchar(5)                     NOT NULL,
+            event_id     varchar(20)                    NOT NULL,
             home_wins    SMALLINT DEFAULT 0,
             home_losses  SMALLINT DEFAULT 0,
             away_wins    SMALLINT DEFAULT 0,
@@ -103,11 +95,13 @@ export const init = async () => {
     `);
 
     await host.query(`
-        ALTER TABLE NFL_Event ADD CONSTRAINT FOREIGN KEY (home_team) REFERENCES Competitor (instance_id)
+        ALTER TABLE NFL_Event
+            ADD CONSTRAINT FOREIGN KEY (home_team) REFERENCES Competitor (instance_id)
     `);
 
     await host.query(`
-        ALTER TABLE NFL_Event ADD CONSTRAINT FOREIGN KEY (away_team) REFERENCES Competitor (instance_id)
+        ALTER TABLE NFL_Event
+            ADD CONSTRAINT FOREIGN KEY (away_team) REFERENCES Competitor (instance_id)
     `)
 
     await host.end(err => {
