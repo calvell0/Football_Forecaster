@@ -1,6 +1,6 @@
 import {NFLEvent, Team, TeamResponseObject} from "./models/models.js";
 import {DataClient} from "./models/DataClient.js";
-const axios = require("axios");
+import axios, {AxiosResponse} from "axios";
 
 
 export class HttpDataClient implements DataClient {
@@ -19,8 +19,9 @@ export class HttpDataClient implements DataClient {
         const response = await axios.get(this.API_BASE_URL + scoreboardURL)
             .catch((error: any) => {
                 console.error(error);
-            });
+            }) as AxiosResponse;
         // console.log(response.data);
+
        return response.data.events;
     }
 
@@ -29,7 +30,7 @@ export class HttpDataClient implements DataClient {
         const response = await axios.get(this.API_BASE_URL + "teams")
             .catch((error: any) => {
                 console.error(error);
-            });
+            }) as AxiosResponse;
         // console.log(response.data.sports[0].leagues[0].teams);
 
         response.data.sports[0].leagues[0].teams.forEach((team) => {
