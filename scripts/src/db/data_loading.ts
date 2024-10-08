@@ -1,5 +1,5 @@
 import mysql, {Connection} from 'mysql2/promise';
-import {connect} from './init.js';
+import {connect} from './initialize_database.js';
 import {NFLEvent, Team} from "../models/models.js";
 import {parseRecords} from "../utils/dataUtils.js";
 
@@ -10,16 +10,24 @@ export const persist_teams = async (teams: Team[]) => {
                       (id, uid, abbreviation, displayName, shortDisplayName, color, alternateColor, isActive,
                        isAllStar)
                       VALUES ?`,
-        [
+        [ //mysql2 accepts batch inserts as a double-nested array
             teams.map(team =>
                 [
-                    team.id, team.uid, team.abbreviation, team.displayName,
+                    parseInt(team.id), team.uid, team.abbreviation, team.displayName,
                     team.shortDisplayName, team.color, team.alternateColor, team.isActive, team.isAllStar
                 ]
             )
         ]
     );
 
+    await host.query(`
+        INSERT INTO Logo (team_id, href) VALUES ?`,
+            [ //mysql2 accepts batch inserts as a double-nested array
+            teams.map(team =>
+                team.logos.map((href: string) => [parseInt(team.id), href])
+            ).flat(1)
+            ]
+        );
 
     await host.end();
 }

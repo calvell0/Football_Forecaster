@@ -9,6 +9,7 @@ export interface Team {
     alternateColor: string;
     isActive: boolean;
     isAllStar: boolean;
+    logos: string[];
 }
 
 export interface TeamResponseObject {

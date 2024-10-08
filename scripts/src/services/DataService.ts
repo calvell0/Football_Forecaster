@@ -20,11 +20,11 @@ export class DataService {
     }
 
     public async initialize(): Promise<void> {
-        this.teams = await this.dataClient.getAllTeams();
-        await this.getRawEventData();
+        await this.fetchTeamData();
+        await this.fetchEventData();
     }
 
-    public async getRawTeamData(): Promise<void> {
+    public async fetchTeamData(): Promise<void> {
         const teamData = await this.dataClient.getAllTeams();
         // console.log(teamData);
         for (let team of teamData) {
@@ -38,7 +38,8 @@ export class DataService {
                 color: team.color,
                 alternateColor: team.alternateColor,
                 isActive: team.isActive,
-                isAllStar: team.isAllStar
+                isAllStar: team.isAllStar,
+                logos: team.logos.map((logo: any) => logo.href)
             } as Team);
         }
 
@@ -57,7 +58,7 @@ export class DataService {
         return this.events;
     }
 
-    public async getRawEventData(): Promise<void> {
+    public async fetchEventData(): Promise<void> {
         const events = await this.dataClient.getAllEvents();
         // console.log(events);
         let iterCount = 0;

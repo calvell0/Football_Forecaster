@@ -1,9 +1,9 @@
 import {DataService} from "./services/DataService.js";
 import {HttpDataClient} from "./HTTPDataClient.js";
-import {init} from "./db/init.js";
+import {initialize_database} from "./db/initialize_database.js";
 
 
-await init();
+await initialize_database();
 
 const dataService = await DataService.build(new HttpDataClient());
 console.log("Saving teams to db...");
