@@ -28,7 +28,7 @@ export const connect = async (): Promise<Connection> => {
     return host;
 }
 
-export const init = async () => {
+export const initialize_database = async (): Promise<void> => {
     const host = await connect();
 
     await host.query(`
@@ -46,10 +46,10 @@ export const init = async () => {
     await host.query(`
         CREATE TABLE IF NOT EXISTS Team
         (
-            id               VARCHAR(5) UNIQUE PRIMARY KEY NOT NULL,
-            uid              VARCHAR(15),
+            id               SMALLINT UNIQUE PRIMARY KEY NOT NULL,
+            uid              VARCHAR(17),
             abbreviation     VARCHAR(5),
-            displayName      VARCHAR(60),
+            displayName      VARCHAR(50),
             shortDisplayName VARCHAR(30),
             color            VARCHAR(6),
             alternateColor   VARCHAR(6),
@@ -62,8 +62,8 @@ export const init = async () => {
     await host.query(`
         CREATE TABLE IF NOT EXISTS NFL_Event
         (
-            id                     VARCHAR(20) PRIMARY KEY,
-            uid                    VARCHAR(60),
+            id                     INT UNSIGNED PRIMARY KEY NOT NULL,
+            uid                    VARCHAR(26),
             date                   DATETIME,
             short_name             VARCHAR(20),
             season_year            SMALLINT,
@@ -71,9 +71,11 @@ export const init = async () => {
             conference_competition BIT,
             neutral_site           BIT,
             venue                  SMALLINT,
-            home_team              INT,
-            away_team              INT,
-            venue_id               INT
+            home_team              SMALLINT,
+            away_team              SMALLINT,
+            venue_id               INT,
+            FOREIGN KEY (home_team) REFERENCES Team (id),
+            FOREIGN KEY (away_team) REFERENCES Team (id)
         );
     `);
 
@@ -81,8 +83,8 @@ export const init = async () => {
         CREATE TABLE IF NOT EXISTS Competitor
         (
             instance_id  INT AUTO_INCREMENT PRIMARY KEY NOT NULL,
-            team_id      varchar(5)                     NOT NULL,
-            event_id     varchar(20)                    NOT NULL,
+            team_id      SMALLINT                       NOT NULL,
+            event_id     INT UNSIGNED                   NOT NULL,
             home_wins    SMALLINT DEFAULT 0,
             home_losses  SMALLINT DEFAULT 0,
             away_wins    SMALLINT DEFAULT 0,
@@ -95,14 +97,15 @@ export const init = async () => {
     `);
 
     await host.query(`
-        ALTER TABLE NFL_Event
-            ADD CONSTRAINT FOREIGN KEY (home_team) REFERENCES Competitor (instance_id)
+        CREATE TABLE IF NOT EXISTS Logo
+        (
+            id      INT AUTO_INCREMENT PRIMARY KEY NOT NULL,
+            href    VARCHAR(255),
+            team_id SMALLINT,
+            FOREIGN KEY (team_id) REFERENCES Team (id)
+        )
     `);
 
-    await host.query(`
-        ALTER TABLE NFL_Event
-            ADD CONSTRAINT FOREIGN KEY (away_team) REFERENCES Competitor (instance_id)
-    `)
 
     await host.end(err => {
         if (err) {
