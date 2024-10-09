@@ -2,16 +2,16 @@ package com.football.backend.wrapper.models;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.relational.core.mapping.Table;
 
 import java.util.List;
 
-
+@Table("Team")
 public class Team {
 
     @Id
-    private String id;
+    private Integer id;
     private String uid;
-    private String slug;
     private String abbreviation;
     private String displayName;
     private String shortDisplayName;
@@ -19,14 +19,13 @@ public class Team {
     private String alternateColor;
     private boolean isActive;
     private boolean isAllStar;
-    private List<String> logos;
 
     // Getters and Setters
-    public String getId() {
+    public Integer getId() {
         return id;
     }
 
-    public void setId(String id) {
+    public void setId(Integer id) {
         this.id = id;
     }
 
@@ -38,13 +37,6 @@ public class Team {
         this.uid = uid;
     }
 
-    public String getSlug() {
-        return slug;
-    }
-
-    public void setSlug(String slug) {
-        this.slug = slug;
-    }
 
     public String getAbbreviation() {
         return abbreviation;
@@ -102,12 +94,5 @@ public class Team {
         this.isAllStar = isAllStar;
     }
 
-    public List<String> getLogos() {
-        return logos;
-    }
-
-    public void setLogos(List<String> logos) {
-        this.logos = logos;
-    }
 
 }
