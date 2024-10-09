@@ -49,12 +49,12 @@ export const initialize_database = async (): Promise<void> => {
             id               SMALLINT UNIQUE PRIMARY KEY NOT NULL,
             uid              VARCHAR(17),
             abbreviation     VARCHAR(5),
-            displayName      VARCHAR(50),
-            shortDisplayName VARCHAR(30),
+            display_name      VARCHAR(50),
+            short_display_name VARCHAR(30),
             color            VARCHAR(6),
-            alternateColor   VARCHAR(6),
-            isActive         BIT,
-            isAllStar        BIT
+            alternate_color   VARCHAR(6),
+            is_active         BIT,
+            is_all_star        BIT
         );
     `);
 

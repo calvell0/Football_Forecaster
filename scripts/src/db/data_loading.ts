@@ -1,14 +1,14 @@
-import mysql, {Connection} from 'mysql2/promise';
+
 import {connect} from './initialize_database.js';
 import {NFLEvent, Team} from "../models/models.js";
-import {parseRecords} from "../utils/dataUtils.js";
+
 
 export const persist_teams = async (teams: Team[]) => {
     const host = await connect();
     console.log(teams);
     await host.query(`INSERT INTO Team
-                      (id, uid, abbreviation, displayName, shortDisplayName, color, alternateColor, isActive,
-                       isAllStar)
+                      (id, uid, abbreviation, display_name, short_display_name, color, alternate_color, is_active,
+                       is_all_star)
                       VALUES ?`,
         [ //mysql2 accepts batch inserts as a double-nested array
             teams.map(team =>
