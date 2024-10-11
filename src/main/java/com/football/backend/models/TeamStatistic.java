@@ -1,4 +1,4 @@
-package com.football.backend.wrapper.models;
+package com.football.backend.models;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 

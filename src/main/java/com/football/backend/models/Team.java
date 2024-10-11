@@ -1,16 +1,13 @@
-package com.football.backend.wrapper.models;
+package com.football.backend.models;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.relational.core.mapping.Table;
-
-import java.util.List;
 
 @Table("Team")
 public class Team {
 
     @Id
-    private Integer id;
+    private int id;
     private String uid;
     private String abbreviation;
     private String displayName;
@@ -21,11 +18,11 @@ public class Team {
     private boolean isAllStar;
 
     // Getters and Setters
-    public Integer getId() {
+    public int getId() {
         return id;
     }
 
-    public void setId(Integer id) {
+    public void setId(int id) {
         this.id = id;
     }
 
