@@ -57,23 +57,23 @@ header h1 {
     text-align: center;
 }
 
-#search {
-    padding: 15px;
-    width: 90%;
-    max-width: 400px;
-    border: none;
-    border-radius: 15px;
-    font-size: 1.2rem;
-    background-color: #32CD32;
-    color: #fff;
-    outline: none;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
-    transition: transform 0.2s;
-}
+/*#search {*/
+/*    padding: 15px;*/
+/*    width: 90%;*/
+/*    max-width: 400px;*/
+/*    border: none;*/
+/*    border-radius: 15px;*/
+/*    font-size: 1.2rem;*/
+/*    background-color: #32CD32;*/
+/*    color: #fff;*/
+/*    outline: none;*/
+/*    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);*/
+/*    transition: transform 0.2s;*/
+/*}*/
 
-#search:focus {
-    transform: scale(1.05);
-}
+/*#search:focus {*/
+/*    transform: scale(1.05);*/
+/*}*/
 
 .calendar-section {
     text-align: center;
@@ -123,4 +123,28 @@ h2 {
 .football-image:hover {
     transform: scale(1.05);
     box-shadow: 0 12px 40px rgba(0, 0, 0, 0.9);
+}
+
+#search-section a {
+    display: block;
+    margin-top: 15px;
+    clear: both;
+}
+
+#search-section a button {
+    padding: 15px;
+    width: 90%;
+    max-width: 400px;
+    border: none;
+    border-radius: 15px;
+    font-size: 1.2rem;
+    background-color: #32CD32;
+    color: #fff;
+    outline: none;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+    transition: transform 0.2s;
+}
+
+#search-section a button:focus {
+    transform: scale(1.05);
 }

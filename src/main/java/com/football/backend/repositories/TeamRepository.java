@@ -6,4 +6,5 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface TeamRepository extends ListPagingAndSortingRepository<Team, Integer> {
+    Team findById(Integer id);
 }

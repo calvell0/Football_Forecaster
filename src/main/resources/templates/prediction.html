@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>NFL Matchup Prediction</title>
+    <link rel="stylesheet" type="text/css" th:href="@{/styles/predictionStyles.css}">
+</head>
+<body>
+<h1>NFL Matchup Prediction</h1>
+
+<div class="team">
+    <h2 id="team1-name" th:text="${homeTeam.getDisplayName()}"></h2>
+    <img id="team1-logo" src="" alt="Team 1 Logo">
+</div>
+
+<h2>vs</h2>
+
+<div class="team">
+    <h2 id="team2-name" th:text="${awayTeam.getDisplayName()}"></h2>
+    <img id="team2-logo" src="" alt="Team 2 Logo">
+</div>
+
+<h3>Predicted Outcome: <span id="predicted-outcome" th:text="${(prediction.getOutcome()) ? homeTeam.getDisplayName() : awayTeam.getDisplayName()}"> are predicted to win</span></h3>
+<h3>Confidence Level: <span id="confidence-level" th:text="${prediction.getConfidence()}"></span></h3>
+</body>
+</html>
