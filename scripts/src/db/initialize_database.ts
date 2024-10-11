@@ -1,11 +1,5 @@
 // Import required modules
 import mysql, {Connection} from 'mysql2/promise';
-import dotenv from 'dotenv';
-
-//load .env variables into process.env
-dotenv.config({
-    path: '../.env'
-});
 
 export const connect = async (): Promise<Connection> => {
     const {MYSQL_HOST, MYSQL_USER, MYSQL_PASSWORD} = process.env;
