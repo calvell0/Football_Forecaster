@@ -6,7 +6,7 @@
   "scripts": {
     "test": "tsc && node dist/tests/index.test.js",
     "tsc": "tsc",
-    "exec": "tsc && node dist/index.js"
+    "compile_and_run": "tsc && node dist/index.js"
   },
   "author": "",
   "license": "ISC",
