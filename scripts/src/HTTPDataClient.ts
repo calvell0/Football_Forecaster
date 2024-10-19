@@ -18,7 +18,7 @@ export class HttpDataClient implements DataClient {
         const scoreboardURL = "scoreboard?dates=20200101-20201231&limit=1000";
         const response = await axios.get(this.API_BASE_URL + scoreboardURL)
             .catch((error: any) => {
-                console.error(error);
+                console.error("[ERROR] Request failed. Check your network or ensure that you're not rate-limited.");
             }) as AxiosResponse;
         // console.log(response.data);
 
@@ -29,7 +29,7 @@ export class HttpDataClient implements DataClient {
         const teams= [];
         const response = await axios.get(this.API_BASE_URL + "teams")
             .catch((error: any) => {
-                console.error(error);
+                console.error("[ERROR] Request failed. Check your network or ensure that you're not rate-limited.");
             }) as AxiosResponse;
         // console.log(response.data.sports[0].leagues[0].teams);
 

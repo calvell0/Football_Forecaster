@@ -1,5 +1,5 @@
 export interface Team {
-    id: string;
+    id: number;
     uid: string;
     slug: string;
     abbreviation: string;
@@ -20,15 +20,15 @@ export interface NFLEventResponseObject {
 
 }
 
-export interface NFLEvent {
 
-    id: string;
+export interface NFLEvent {
+    id: number;
     uid: string;
     date: string;
     shortName: string;
     season: Season;
+    status: "STATUS_SCHEDULED" | "STATUS_FINAL" | "STATUS_OTHER";
     competitions: Competition[];
-
 }
 
 export enum SeasonType {
@@ -43,7 +43,7 @@ export interface Season {
 }
 
 export interface Competition{
-    id: string;
+    id: number;
     uid: string;
     date: string;
     competitionType: string;
@@ -55,15 +55,16 @@ export interface Competition{
 }
 
 export interface Venue {
-    id: string;
+    id: number;
 }
 
 export interface Competitor {
     team: Team;
     homeAway: boolean;
-    winner: boolean;
+    winner: boolean | null;
     score: number;
     records: [Record, Record, Record];
+    event_id?: number;
 }
 
 

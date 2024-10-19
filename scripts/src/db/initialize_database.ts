@@ -29,7 +29,7 @@ export const initialize_database = async (): Promise<void> => {
         DROP DATABASE IF EXISTS nfl_data
         `);
 
-    // Create the database if it doesn't already exist
+
     await host.query(`
         CREATE DATABASE IF NOT EXISTS nfl_data
         `);
@@ -64,10 +64,9 @@ export const initialize_database = async (): Promise<void> => {
             competition_type       SMALLINT,
             conference_competition BIT,
             neutral_site           BIT,
-            venue                  SMALLINT,
             home_team              SMALLINT,
             away_team              SMALLINT,
-            venue_id               INT,
+            status                 ENUM('STATUS_SCHEDULED', 'STATUS_OTHER', 'STATUS_FINAL'),
             FOREIGN KEY (home_team) REFERENCES Team (id),
             FOREIGN KEY (away_team) REFERENCES Team (id)
         );
@@ -79,6 +78,7 @@ export const initialize_database = async (): Promise<void> => {
             instance_id  INT AUTO_INCREMENT PRIMARY KEY NOT NULL,
             team_id      SMALLINT                       NOT NULL,
             event_id     INT UNSIGNED                   NOT NULL,
+            winner       BIT DEFAULT NULL,
             home_wins    SMALLINT DEFAULT 0,
             home_losses  SMALLINT DEFAULT 0,
             away_wins    SMALLINT DEFAULT 0,
@@ -99,6 +99,7 @@ export const initialize_database = async (): Promise<void> => {
             FOREIGN KEY (team_id) REFERENCES Team (id)
         )
     `);
+
 
 
     await host.end(err => {

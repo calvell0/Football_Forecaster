@@ -14,6 +14,7 @@ await initialize_database();
 const dataService = await DataService.build(new HttpDataClient());
 console.log("Saving teams to db...");
 await dataService.persistTeams();
+await dataService.persistEvents();
 
 
 
