@@ -1,27 +1,59 @@
 import {NFLEvent, Team, Record, Competition, Competitor} from "../models/models.d.js";
 import {DataClient} from "../models/DataClient.js";
-import { persist_teams } from "../db/data_loading.js";
+import {persist_events, persist_teams} from "../db/data_loading.js";
+import {parseEventStatus} from "../utils/dataUtils.js";
+import {formatISO9075} from "date-fns";
+import {performance} from "perf_hooks";
 
 
 export class DataService {
     private dataClient: DataClient;
     private teams: Team[] = [];
     private events: NFLEvent[] = [];
-
+    private perfObserver: PerformanceObserver;
 
     private constructor(dataClient: DataClient) {
+        //initialize performance observer to log performance metrics
+        this.perfObserver = new PerformanceObserver((items) => {
+            items.getEntries().forEach((entry) => {
+                console.log(`[PERFORMANCE] ${entry.name}: ${entry.duration}ms`);
+            })
+        });
+        this.perfObserver.observe({entryTypes: ['measure'], buffered: true});
+
         this.dataClient = dataClient;
     }
 
     public static async build(dataClient: DataClient): Promise<DataService>{
+
         const ds = new DataService(dataClient);
         await ds.initialize();
         return ds;
     }
 
     public async initialize(): Promise<void> {
+        performance.mark("fetch-teams-start");
         await this.fetchTeamData();
+        performance.mark("fetch-teams-end");
+        performance.mark("fetch-events-start");
         await this.fetchEventData();
+        performance.mark("fetch-events-end");
+        performance.measure("fetch-teams", "fetch-teams-start", "fetch-teams-end");
+        performance.measure("fetch-events", "fetch-events-start", "fetch-events-end");
+    }
+
+    public async persistTeams(): Promise<void> {
+        performance.mark("persist-teams-start");
+        await persist_teams(this.teams);
+        performance.mark("persist-teams-end");
+        performance.measure("persist-teams", "persist-teams-start", "persist-teams-end");
+    }
+
+    public async persistEvents(): Promise<void> {
+        performance.mark("persist-events-start");
+        await persist_events(this.events);
+        performance.mark("persist-events-end");
+        performance.measure("persist-events", "persist-events-start", "persist-events-end");
     }
 
     public async fetchTeamData(): Promise<void> {
@@ -29,7 +61,7 @@ export class DataService {
         // console.log(teamData);
         for (let team of teamData) {
             this.teams.push({
-                id: team.id,
+                id: parseInt(team.id),
                 uid: team.uid,
                 slug: team.slug,
                 abbreviation: team.abbreviation,
@@ -46,9 +78,6 @@ export class DataService {
         return;
     }
 
-    public async persistTeams(): Promise<void> {
-        await persist_teams(this.teams);
-    }
 
     public getTeams(): Team[] {
         return this.teams;
@@ -71,17 +100,18 @@ export class DataService {
                 continue;
             }
             this.events.push({
-                    id: event.id,
+                    id: parseInt(event.id),
                     uid: event.uid,
-                    date: event.date,
+                    date: formatISO9075(event.date), //MySQL doesn't accept ISO8601 dates, which is what ESPN API uses
                     shortName: event.shortName,
                     season: {
                         year: event.season.year,
                         type: event.season.type
                     },
+                    status: parseEventStatus(event.status.type.name),
                     competitions: [
                         {
-                            id: event.competitions[0].id,
+                            id: parseInt(event.competitions[0].id),
                             uid: event.competitions[0].uid,
                             date: event.competitions[0].date,
                             competitionType: event.competitions[0].competitionType,
@@ -138,11 +168,12 @@ export class DataService {
         }
     }
 
+
     public getTeamByUid(uid: string): Team {
         return this.teams.find((team) => team.uid === uid);
     }
 
-    public getGameById(id: string): NFLEvent {
+    public getGameById(id: number): NFLEvent {
         return this.events.find((game) => game.id === id);
     }
 
