@@ -14,6 +14,9 @@ import org.springframework.web.client.RestTemplate;
 
 import java.util.List;
 
+/**
+ * Class that manages external API calls and responses
+ */
 @Component
 public class APIService {
 

@@ -37,4 +37,26 @@ public class WebController {
         model.addAttribute("prediction", new PlaceholderPrediction(true, 0.5));
         return "prediction";
     }
+
+
+    /*
+    SCHEDULING BUSINESS LOGIC ON "/" REQUEST
+        if lastUpdated > %CACHE_DURATION% ms ago:
+            send API request for schedule
+            update and overwrite all matching events in DB
+            match competitors in DB by event id ->
+                update competitors and stats
+            populate template schedule data with updated info
+
+        CONCERNS
+            fetching event data will take a while. Maybe it'll be better to
+            populate the frontend with outdated schedule data, and then send
+            updated data to the frontend to be overwritten after the query
+            and DB update have been completed on the backend
+
+    PREDICTION BUSINESS LOGIC ON "/prediction" REQUEST
+        send API request for both current team stats ->
+            feed to prediction model
+            return prediction object(outcome, confidence)
+     */
 }
