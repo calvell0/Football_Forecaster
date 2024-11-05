@@ -50,6 +50,44 @@ header h1 {
     width: 90%;
     max-width: 600px;
 }
+.dropdown{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 20px;
+    width: 100%;
+}
+.form1, .form2 {
+    display: flex;
+    align-items: center;
+}
+.search-bar{
+    border-radius: 25px;
+    border: 2px solid #73AD21;
+    padding: 10px;
+    width: 180px;
+    height: 10px;
+}
+
+.dropbtn {
+    background-color: #578d04; /* Button color */
+    border: none;
+    padding: 5px;
+    margin-left: 5px;
+    border-radius: 4px 4px 4px 4px; /* Rounded corners on the right */
+    cursor: pointer;
+    color: white; /* Icon color */
+    transition: background-color 0.3s;
+}
+
+.dropbtn:hover {
+    background-color: #02cd32; /* Darker blue on hover */
+}
+
+.dropbtn i {
+    margin: 0; /* Remove any margin */
+}
 
 .search-section {
     margin-bottom: 30px;
@@ -147,4 +185,64 @@ h2 {
 
 #search-section a button:focus {
     transform: scale(1.05);
+}
+/* Container for the search bars to align them side by side */
+.dropdown-container {
+    display: flex;
+    justify-content: space-between;
+    gap: 20px; /* Space between the search bars */
+    width: 100%;
+    max-width: 600px; /* Adjust to your preferred width */
+    margin-bottom: 20px;
+}
+
+/* Style each dropdown */
+.dropdown {
+    position: relative;
+    width: 100%; /* Make each search bar take up equal width */
+}
+
+/* Style the search bars */
+.search-bar {
+    width: 100%; /* Full width inside each form */
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+
+/* Style the dropdown content */
+.dropdown-content {
+    display: none;
+    position: absolute;
+    top: 100%; /* Position directly below the search bar */
+    left: 0;
+    width: 100%; /* Match the width of the search bar */
+    max-height: 200px; /* Limit height and enable scrolling */
+    overflow-y: auto;
+    background-color: #fff;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    z-index: 1;
+}
+
+/* Dropdown item styles */
+.dropdown-content ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.dropdown-content ul li {
+    padding: 8px;
+}
+
+.dropdown-content ul li a {
+    text-decoration: none;
+    color: #333;
+    display: block;
+}
+
+.dropdown-content ul li a:hover {
+    background-color: #f1f1f1;
 }
