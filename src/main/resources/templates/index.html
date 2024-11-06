@@ -7,55 +7,192 @@
     <title>Football Forecaster</title>
     <link rel="stylesheet" th:href="@{/styles/styles.css}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/flatpickr/4.6.9/flatpickr.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     <script th:src="@{/scripts/multiselect-dropdown.js}"></script>
+    <script>
+        // Toggles visibility of dropdown
+        function toggleDropdown(event, dropdownId) {
+            event.preventDefault(); // Prevent the default button behavior
+            const dropdown = document.getElementById(dropdownId);
+
+            // Check the current display style of the dropdown
+            if (dropdown.style.display === "none" || dropdown.style.display === "") {
+                dropdown.style.display = "block"; // Show the dropdown
+            } else {
+                dropdown.style.display = "none"; // Hide the dropdown
+            }
+        }
+
+        // Populate the teamData object
+        function populateTeamData() {
+            const teamsArray = /*[[${teams}]]*/ [];
+            console.log("Teams Array:", teamsArray);
+            teamsArray.forEach(team => {
+                teamData[team.id] = team.displayName;
+            });
+        }
+
+        // Call the function to populate the data
+        populateTeamData();
+
+
+        function fillSearchField(teamId, queryFieldId) {
+            const teamName = teamData[teamId];
+
+            if (teamName) {
+                document.getElementById(queryFieldId).value = teamName;
+            } else {
+                console.error("Team not found for ID: " + teamId);
+            }
+        }
+    </script>
 
 </head>
 
 <body>
-    <header>
-        <h1>Football Forecaster</h1>
-    </header>
+<header>
+    <h1>Football Forecaster</h1>
+</header>
 
-    <main>
+<main>
+    <div class="image-section">
+        <img th:src="@{/styles/images/football image.jpeg}" alt="Football image" class="football-image">
+    </div>
 
-        <div class="image-section">
-            <img th:src="@{/styles/images/football image.jpeg}" alt="Football image" class="football-image">
+    <div class="container">
+        <div class="search-section">
+            <select name="teams" id="search" multiple multiselect-search="true">
+                <option th:each="team : ${teams}" th:value="${team.id}" th:text="${team.displayName}"></option>
+            </select>
+            <a id="prediction-anchor" href="/prediction/">
+                <button id="get-prediction">Get Prediction</button>
+            </a>
         </div>
 
-        <div class="container">
-            <div class="search-section">
-                <select name="teams" id="search" multiple multiselect-search="true">
-                    <option th:each="team : ${teams}" th:value="${team.id}" th:text="${team.displayName}"></option>
-                </select>
-                <a id="prediction-anchor" href="/prediction/">
-                    <button id="get-prediction">Get Prediction</button>
-                </a>
+        <div class="dropdown-container">
+            <div class="dropdown">
+                <form class="form1" id="form1">
+                    <input class="search-bar" type="search" id="query" name="q" placeholder="Search...." readonly>
+                    <button type="button" onclick="toggleDropdown(event, 'teamDropdown1')" class="dropbtn">
+                        <i class="fas fa-search"></i>
+                    </button>
+                </form>
+                <div id="teamDropdown1" class="dropdown-content" style="display:none;">
+                    <ul>
+                        <li th:each="team : ${teams}">
+                            <a href="#"
+                               th:attr="onclick=|document.getElementById('query').value = '${team.displayName}';
+                               document.getElementById('query').setAttribute('data-id', '${team.id}');
+                               document.getElementById('query').setAttribute('short', '${team.abbreviation}');
+                               const dropdown = document.getElementById('teamDropdown1');
+                               dropdown.style.display = dropdown.style.display === 'block' ? 'none' : 'block';|"
+                               th:text="${team.displayName}"></a>
+                        </li>
+
+                    </ul>
+                </div>
             </div>
 
-            <div class="calendar-section">
-                <h2>Select Game Date</h2>
-                <input type="text" id="game-date" class="calendar-input" placeholder="Pick a date">
+            <div class="dropdown">
+                <form class="form2" id="form2">
+                    <input class="search-bar" type="search" id="query2" name="q" placeholder="Search...." readonly>
+                    <button type="button" onclick="toggleDropdown(event, 'teamDropdown2')" class="dropbtn">
+                        <i class="fas fa-search"></i>
+                    </button>
+                </form>
+                <div id="teamDropdown2" class="dropdown-content" style="display:none;">
+                    <ul>
+                        <li th:each="team : ${teams}">
+                            <a href="#"
+                               th:attr="onclick=|document.getElementById('query2').value =  '${team.displayName}';
+                                 document.getElementById('query2').setAttribute('data-id', '${team.id}');
+                                 document.getElementById('query2').setAttribute('short', '${team.abbreviation}');
+                                const dropdown = document.getElementById('teamDropdown2');
+                                dropdown.style.display = dropdown.style.display === 'block' ? 'none' : 'block';|"
+                               th:text="${team.displayName}"></a>
+                        </li>
+
+                    </ul>
+                </div>
             </div>
         </div>
-    </main>
+        <button
+        onclick="findGameDates()">
+            Find Game Dates
+        </button>
+        <div class="calendar-section">
+            <h2>Select Game Date</h2>
+            <input type="text" id="game-date" class="calendar-input" placeholder="Pick a date">
+        </div>
+    </div>
+</main>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/flatpickr/4.6.9/flatpickr.min.js"></script>
-    <script>
-        flatpickr("#game-date", {
-            enableTime: false,
-            dateFormat: "Y-m-d",
-        });
-        document.getElementById('search').addEventListener('change', function() {
-            var selectedOptions = Array.from(this.selectedOptions);
-            if (selectedOptions.length >= 2) {
-                var firstTeamId = selectedOptions[0].value;
-                var secondTeamId = selectedOptions[1].value;
-                var newUrl = '/prediction?home=' + firstTeamId + '&away=' + secondTeamId;
-                document.getElementById("prediction-anchor").href = newUrl;
+<script src="https://cdnjs.cloudflare.com/ajax/libs/flatpickr/4.6.9/flatpickr.min.js"></script>
+<script>
+    function findGameDates() {
+        // Get the values from the search bars
+        const teamName1 = document.getElementById('query').value;
+        const teamName2 = document.getElementById('query2').value;
+        const teamId1 = document.getElementById('query').getAttribute('data-id');
+        const teamId2 = document.getElementById('query2').getAttribute('data-id');
+        const team1Ab = document.getElementById('query').getAttribute('short');
+        const team2Ab = document.getElementById('query2').getAttribute('short');
+        let shortName = "";
+
+        if (teamName1 !== null && teamName1 !== undefined && teamName2 !== null && teamName2 !== undefined) {
+            shortName = team1Ab + " @ " + team2Ab;
+        }
+        // Print the values to the console
+        console.log("Team 1 Name: " + teamName1 + " team1 id: " + teamId1 + " abv: " + team1Ab);
+        console.log("Team 2 Name: " + teamName2 + " team2 id: " + teamId2 + " abv: " + team2Ab);
+        console.log(shortName);
+    }
+    flatpickr("#game-date", {
+        enableTime: false,
+        dateFormat: "Y-m-d",
+    });
+
+    const teamData = {}; // Global variable to store team data
+
+
+
+
+
+    // Close dropdowns if clicked outside
+    document.addEventListener("click", function (e) {
+        const dropdowns = document.querySelectorAll(".dropdown-content");
+        dropdowns.forEach(dropdown => {
+            const isClickInsideDropdown = dropdown.contains(e.target);
+            const isClickOnButton = e.target.closest(".dropbtn");
+
+            if (!isClickInsideDropdown && !isClickOnButton) {
+                dropdown.style.display = "none"; // Hide the dropdown if clicked outside
             }
         });
+    });
 
-    </script>
+
+    // Function to toggle dropdown visibility
+    function dropFunction(event, dropdownId) {
+        event.preventDefault(); // Prevent the default button behavior
+        const dropdown = document.getElementById(dropdownId);
+        dropdown.style.display = dropdown.style.display === "block" ? "none" : "block";
+    }
+
+    // Event listener for the search dropdown
+    document.getElementById('search').addEventListener('change', function() {
+        var selectedOptions = Array.from(this.selectedOptions);
+        if (selectedOptions.length >= 2) {
+            var firstTeamId = selectedOptions[0].value;
+            var secondTeamId = selectedOptions[1].value;
+            var newUrl = '/prediction?home=' + firstTeamId + '&away=' + secondTeamId;
+            document.getElementById("prediction-anchor").href = newUrl;
+        }
+    });
+
+    // Call this to populate the team data
+    populateTeamData();
+</script>
 </body>
 
 </html>
