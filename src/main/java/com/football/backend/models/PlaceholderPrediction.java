@@ -1,8 +1,8 @@
 package com.football.backend.models;
 
-public class TempPrediction {
+public class PlaceholderPrediction {
 
-    public TempPrediction(boolean outcome, double confidence) {
+    public PlaceholderPrediction(boolean outcome, double confidence) {
         this.outcome = outcome;
         this.confidence = confidence;
     }
