@@ -11,6 +11,7 @@ import java.util.List;
 @Repository
 public interface TeamRepository extends ListPagingAndSortingRepository<Team, Integer> {
     List<Team> findAll(Sort sort);
+    Team findById(Integer id);
 }
 
 
