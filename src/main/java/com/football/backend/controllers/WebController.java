@@ -1,8 +1,12 @@
 package com.football.backend.controllers;
 
+import com.football.backend.models.NFLEvent;
 import com.football.backend.models.Team;
 import com.football.backend.models.PlaceholderPrediction;
 import com.football.backend.repositories.TeamRepository;
+import com.football.backend.services.ScheduleCacheManager;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Controller;
@@ -15,26 +19,35 @@ import java.util.List;
 @Controller
 public class WebController {
 
+    private final static Logger LOG = LoggerFactory.getLogger(WebController.class);
+
     private final TeamRepository teamRepository;
+    private final ScheduleCacheManager cacheManager;
+
     @Autowired
-    public WebController(TeamRepository teamRepository) {
+    public WebController(TeamRepository teamRepository, ScheduleCacheManager cacheManager) {
         this.teamRepository = teamRepository;
+        this.cacheManager = cacheManager;
     }
 
     @GetMapping("/")
     public String home (Model model) {
         List<Team> teams = teamRepository.findAll(Sort.by(Sort.Order.asc("id")));
+        List<NFLEvent> scheduledEvents = this.cacheManager.getScheduledEvents();
+        LOG.info(scheduledEvents.get(0).toString());
         model.addAttribute("teams", teams);
+        model.addAttribute("scheduledEvents", scheduledEvents);
         return "index";
     }
 
     @GetMapping("/prediction")
     public String matchupPrediction(@RequestParam(name="home") int homeId, @RequestParam(name="away") int awayId, Model model) {
-        Team home = teamRepository.findById(homeId);
+        Team home = this.teamRepository.findById(homeId);
         Team away = teamRepository.findById(awayId);
         model.addAttribute("homeTeam", home);
         model.addAttribute("awayTeam", away);
         model.addAttribute("prediction", new PlaceholderPrediction(true, 0.5));
+
         return "prediction";
     }
 

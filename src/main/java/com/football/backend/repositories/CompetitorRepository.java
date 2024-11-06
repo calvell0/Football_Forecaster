@@ -7,6 +7,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.data.util.Pair;
 
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -32,7 +33,9 @@ public interface CompetitorRepository extends ListPagingAndSortingRepository<Com
     default void batchPersist(List<Competitor> competitors){
         var compInfo = CompetitorInfo.fromCompetitors(competitors);
         var compIds = matchInstanceIds(compInfo);
-        Map<Integer, CompetitorInfo> infoMap =
+        Map<Integer, Pair<CompetitorInfo, CompetitorInfo>> infoMap = new HashMap<>(compInfo.size());
+        //DO NOT USE DOES NOT WORK
+
     }
 
     /**

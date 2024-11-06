@@ -18,13 +18,14 @@ public interface NFLEventRepository extends ListPagingAndSortingRepository<NFLEv
     Logger log = LoggerFactory.getLogger(NFLEventRepository.class);
     NFLEvent findById(Integer id);
     NFLEvent save(NFLEvent event);
-    void saveAll(List<NFLEvent> events);
+    void saveAll(Iterable<NFLEvent> events);
+
 
     @Query("SELECT e.id FROM nfl_event e WHERE e.id IN (:ids)")
     List<Integer> findAllByIds(@Param("ids") Iterable<Integer> ids);
 
     /**
-     * Bulk save a list of NFLEvents to the database.
+     * Bulk save a list of NFLEvents to the database. DO NOT USE IT DOESNT WORK
      * @param events
      */
     default void batchPersist(List<NFLEvent> events){

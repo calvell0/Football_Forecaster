@@ -61,104 +61,13 @@ public class DataService {
         try {
             ResponseEntity<String> response = apiService.getNFLEventData();
             this.parseEventsAndCompetitors(response);
-            this.eventRepository.batchPersist(this.mappedEvents);
-            this.splitAndPersistCompetitors(this.mappedCompetitors);
+            log.info("Events and competitors parsed and loaded into memory");
         } catch (JsonProcessingException e) {
             log.error("Error parsing JSON response: {}", e.getMessage());
         }
     }
 
-    private void persistEventsAndCompetitors(){
-        this.eventRepository.saveAll(this.mappedEvents);
-        this.competitorRepository.saveAll(this.mappedCompetitors);
-    }
 
-    /*
-    TODO: Refactor both "splitAndPersist" methods to have a single responsibility
-    TODO: Maybe create an abstraction such that either events or competitors can be passed to the same method.
-    */
-
-
-    /**
-     * splits a list of Competitors into 2 lists, one for competitors that already exist in the database and one
-     * for competitors that don't yet exist. These 2 groups of competitors are then saved/updated in the database
-     * @param competitors
-     */
-    private void splitAndPersistCompetitors(List<Competitor> competitors){
-        //sort list to make indexing more efficient
-        competitors.sort(Comparator.comparing(Competitor::getEventId));
-
-        /*
-        Here, we need to split the list of competitors into 2 lists based on whether they exist or not in the database.
-        However, the instance id of the competitors in the database is generated internally by the db, so to check if
-        a given competitor exists already, we need to check if the teamId and eventId are already in the database. If
-        so, then we need to set the instance id of the competitor object to the instance id in the db of the associated
-        team and event.
-         */
-        int numCompetitors = competitors.size();
-        List<Competitor> newCompetitors = new ArrayList<>(numCompetitors);
-        List<Competitor> existingCompetitors = new ArrayList<>(numCompetitors);
-
-        //all competitor instance, team, and event ids
-        List<IdentifyingCompetitorData> competitorIds = this.competitorRepository.findAllIds();
-        competitorIds.sort(Comparator.comparing(IdentifyingCompetitorData::getEventId));
-
-        //maps event ids to team/instance ids. 2 competitors per event, so we need to store 2 values per key
-        HashMap<Integer, CompetitorInfoPair> competitorIdData = new HashMap<>();
-
-        /*
-        for competitorIds:
-            map 2 IdentifyingCompetitorDatas to each eventId
-
-        for competitors:
-            if in competitorIdData:
-                competitor.instanceId = competitorIdData(eventId).instanceId
-         */
-
-        CompetitorInfoPair entry;
-        IdentifyingCompetitorData team1, team2;
-
-        //putting competitor ids into hashmap
-        for (int i = 0; i < competitorIds.size(); i += 2){
-            team1 = competitorIds.get(i);
-            team2 = competitorIds.get(i + 1);
-            //I want to know if there is ever malformed data. There should ALWAYS be 2 teams for each event
-            assert Objects.equals(team1.getEventId(), team2.getEventId()) : "ERROR: Malformed competitor data";
-            competitorIdData.put(team1.getEventId(), new CompetitorInfoPair(team1, team2));
-        }
-
-        for (int i = 0; i < competitors.size(); i += 2){
-            Competitor competitor = competitors.get(i);
-            Competitor competitor2 = competitors.get(i + 1);
-
-            assert competitor.getEventId() == competitor2.getEventId(): "ERROR: Consecutive competitor eventIds don't match";
-
-            int eventId = competitor.getEventId();
-            CompetitorInfoPair pair = competitorIdData.get(eventId);
-            if (pair == null){
-                newCompetitors.add(competitor);
-                newCompetitors.add(competitor2);
-                continue;
-            }
-
-            IdentifyingCompetitorData data1 = pair.getByTeamId(competitor.getTeamId());
-            IdentifyingCompetitorData data2 = pair.getByTeamId(competitor2.getTeamId());
-
-            //if this fails then something is very wrong
-            assert data1 != null && data2 != null: "ERROR: No matching team id found in Pair";
-
-            competitor.setInstanceId(data1.getInstanceId());
-            competitor2.setInstanceId(data2.getInstanceId());
-            existingCompetitors.add(competitor);
-            existingCompetitors.add(competitor2);
-        }
-
-        competitorRepository.saveAll(existingCompetitors);
-        competitorRepository.saveAll(newCompetitors);
-
-
-
-    }
 
 
     private void parseEventsAndCompetitors(ResponseEntity<String> response) throws JsonProcessingException {
@@ -282,7 +191,7 @@ public class DataService {
 
         ZonedDateTime zdt = ZonedDateTime.parse(date, iso8601Formatter);
 
-        DateTimeFormatter iso9075Formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+        DateTimeFormatter iso9075Formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ssXXX");
         return zdt.format(iso9075Formatter);
     }
 

@@ -137,4 +137,22 @@ public class NFLEvent implements Persistable<Integer> {
     public void setStatus(String status) {
         this.status = status;
     }
+
+    @Override
+    public String toString() {
+        return "NFLEvent{" +
+                "id=" + id +
+                ", uid='" + uid + '\'' +
+                ", date='" + date + '\'' +
+                ", shortName='" + shortName + '\'' +
+                ", seasonYear=" + seasonYear +
+                ", competitionType=" + competitionType +
+                ", conferenceCompetition=" + conferenceCompetition +
+                ", neutralSite=" + neutralSite +
+                ", homeTeam=" + homeTeam +
+                ", awayTeam=" + awayTeam +
+                ", status='" + status + '\'' +
+                ", isNew=" + isNew +
+                '}';
+    }
 }

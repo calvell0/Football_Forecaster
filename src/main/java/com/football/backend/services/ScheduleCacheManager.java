@@ -13,6 +13,8 @@ import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.Instant;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Date;
 import java.util.List;
 
@@ -43,6 +45,12 @@ public class ScheduleCacheManager {
         this.sortStrategy = Sort.unsorted();
     }
 
+    public void initCache(){
+        if (this.cacheIsStale() || this.scheduledEvents == null){
+            this.updateCache();
+        }
+    }
+
 
     public List<NFLEvent> getScheduledEvents(){
         if (this.cacheIsStale() || this.scheduledEvents == null){
@@ -60,15 +68,18 @@ public class ScheduleCacheManager {
 
     private void updateCache(){
         this.dataService.updateData();
-        Instant now = Instant.now();
+        ZonedDateTime now = ZonedDateTime.now();
         this.scheduledEvents = this.dataService.getMappedEvents()
                 .stream()
                 .filter(event -> eventDateIsAfterNow(event, now))
                 .toList();
     }
 
-    private boolean eventDateIsAfterNow(NFLEvent event, Instant now) {
-        Instant date = Instant.parse(event.getDate());
+    private boolean eventDateIsAfterNow(NFLEvent event, ZonedDateTime now) {
+//        Instant date = Instant.parse(event.getDate());
+        DateTimeFormatter iso9075Formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ssXXX");
+
+        ZonedDateTime date = ZonedDateTime.parse(event.getDate(), iso9075Formatter);
 
 
         return date.isAfter(now);
