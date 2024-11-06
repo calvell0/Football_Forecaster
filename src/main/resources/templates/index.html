@@ -9,6 +9,43 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/flatpickr/4.6.9/flatpickr.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     <script th:src="@{/scripts/multiselect-dropdown.js}"></script>
+    <script>
+        // Toggles visibility of dropdown
+        function toggleDropdown(event, dropdownId) {
+            event.preventDefault(); // Prevent the default button behavior
+            const dropdown = document.getElementById(dropdownId);
+
+            // Check the current display style of the dropdown
+            if (dropdown.style.display === "none" || dropdown.style.display === "") {
+                dropdown.style.display = "block"; // Show the dropdown
+            } else {
+                dropdown.style.display = "none"; // Hide the dropdown
+            }
+        }
+
+        // Populate the teamData object
+        function populateTeamData() {
+            const teamsArray = /*[[${teams}]]*/ [];
+            console.log("Teams Array:", teamsArray);
+            teamsArray.forEach(team => {
+                teamData[team.id] = team.displayName;
+            });
+        }
+
+        // Call the function to populate the data
+        populateTeamData();
+
+
+        function fillSearchField(teamId, queryFieldId) {
+            const teamName = teamData[teamId];
+
+            if (teamName) {
+                document.getElementById(queryFieldId).value = teamName;
+            } else {
+                console.error("Team not found for ID: " + teamId);
+            }
+        }
+    </script>
 
 </head>
 
@@ -43,7 +80,12 @@
                 <div id="teamDropdown1" class="dropdown-content" style="display:none;">
                     <ul>
                         <li th:each="team : ${teams}">
-                            <a href="#" th:attr="onclick=|fillSearchField(${team.id}, 'query')|"
+                            <a href="#"
+                               th:attr="onclick=|document.getElementById('query').value = '${team.displayName}';
+                               document.getElementById('query').setAttribute('data-id', '${team.id}');
+                               document.getElementById('query').setAttribute('short', '${team.abbreviation}');
+                               const dropdown = document.getElementById('teamDropdown1');
+                               dropdown.style.display = dropdown.style.display === 'block' ? 'none' : 'block';|"
                                th:text="${team.displayName}"></a>
                         </li>
 
@@ -61,14 +103,23 @@
                 <div id="teamDropdown2" class="dropdown-content" style="display:none;">
                     <ul>
                         <li th:each="team : ${teams}">
-                            <a href="#" th:attr="onclick=|fillSearchField(${team.id}, 'query')|"
+                            <a href="#"
+                               th:attr="onclick=|document.getElementById('query2').value =  '${team.displayName}';
+                                 document.getElementById('query2').setAttribute('data-id', '${team.id}');
+                                 document.getElementById('query2').setAttribute('short', '${team.abbreviation}');
+                                const dropdown = document.getElementById('teamDropdown2');
+                                dropdown.style.display = dropdown.style.display === 'block' ? 'none' : 'block';|"
                                th:text="${team.displayName}"></a>
                         </li>
+
                     </ul>
                 </div>
             </div>
         </div>
-
+        <button
+        onclick="findGameDates()">
+            Find Game Dates
+        </button>
         <div class="calendar-section">
             <h2>Select Game Date</h2>
             <input type="text" id="game-date" class="calendar-input" placeholder="Pick a date">
@@ -78,6 +129,24 @@
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/flatpickr/4.6.9/flatpickr.min.js"></script>
 <script>
+    function findGameDates() {
+        // Get the values from the search bars
+        const teamName1 = document.getElementById('query').value;
+        const teamName2 = document.getElementById('query2').value;
+        const teamId1 = document.getElementById('query').getAttribute('data-id');
+        const teamId2 = document.getElementById('query2').getAttribute('data-id');
+        const team1Ab = document.getElementById('query').getAttribute('short');
+        const team2Ab = document.getElementById('query2').getAttribute('short');
+        let shortName = "";
+
+        if (teamName1 !== null && teamName1 !== undefined && teamName2 !== null && teamName2 !== undefined) {
+            shortName = team1Ab + " @ " + team2Ab;
+        }
+        // Print the values to the console
+        console.log("Team 1 Name: " + teamName1 + " team1 id: " + teamId1 + " abv: " + team1Ab);
+        console.log("Team 2 Name: " + teamName2 + " team2 id: " + teamId2 + " abv: " + team2Ab);
+        console.log(shortName);
+    }
     flatpickr("#game-date", {
         enableTime: false,
         dateFormat: "Y-m-d",
@@ -86,18 +155,7 @@
     const teamData = {}; // Global variable to store team data
 
 
-    // Toggles visibility of dropdown
-    function toggleDropdown(event, dropdownId) {
-        event.preventDefault(); // Prevent the default button behavior
-        const dropdown = document.getElementById(dropdownId);
 
-        // Check the current display style of the dropdown
-        if (dropdown.style.display === "none" || dropdown.style.display === "") {
-            dropdown.style.display = "block"; // Show the dropdown
-        } else {
-            dropdown.style.display = "none"; // Hide the dropdown
-        }
-    }
 
 
     // Close dropdowns if clicked outside
@@ -113,28 +171,6 @@
         });
     });
 
-    // Populate the teamData object
-    function populateTeamData() {
-        const teamsArray = /*[[${teams}]]*/ [];
-        console.log("Teams Array:", teamsArray);
-        teamsArray.forEach(team => {
-            teamData[team.id] = team.displayName;
-        });
-    }
-
-    // Call the function to populate the data
-    populateTeamData();
-
-
-    function fillSearchField(teamId, queryFieldId) {
-        const teamName = teamData[teamId];
-
-        if (teamName) {
-            document.getElementById(queryFieldId).value = teamName;
-        } else {
-            console.error("Team not found for ID: " + teamId);
-        }
-    }
 
     // Function to toggle dropdown visibility
     function dropFunction(event, dropdownId) {
