@@ -46,7 +46,7 @@ export const persist_events = async (events: NFLEvent[]) => {
                 [
                     event.id, event.uid, event.date, event.shortName, event.season.year, event.competitions[0].competitionType,
                     event.competitions[0].conferenceCompetition, event.competitions[0].neutralSite, event.status,
-                    event.competitions[0].competitors[0].team.id, event.competitions[0].competitors[0].team.id
+                    event.competitions[0].competitors[0].team.id, event.competitions[0].competitors[1].team.id
                 ]
             )
         ]
