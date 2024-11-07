@@ -1,12 +1,15 @@
 package com.football.backend.services;
 
 import com.football.backend.models.NFLEvent;
+import com.football.backend.models.ScheduleCache;
 import com.football.backend.repositories.NFLEventRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Sort;
+import org.springframework.scheduling.annotation.Async;
+import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 
 import java.text.DateFormat;
@@ -15,67 +18,76 @@ import java.text.SimpleDateFormat;
 import java.time.Instant;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
+
+
+//TODO: Maybe refactor this class into a separate ScheduleCache and ScheduleCacheManager to adhere to SRP
+//TODO: Issues with async methods not actually executing asynchronously, refactoring may help
+//TODO: Maybe async methods can only be executed asynchronously when called directly from another bean?
+//TODO: updateCache() is currently called from within the cacheManager so maybe that's the problem
+
 
 /**
  * Class that holds a cache of scheduled events in memory, and updates the cache when necessary
  *
  */
-@Service
+@Component
 public class ScheduleCacheManager {
 
     private static final Logger log = LoggerFactory.getLogger(ScheduleCacheManager.class);
 
-    private Date lastUpdated;
-    private List<NFLEvent> scheduledEvents;
     private final NFLEventRepository nflEventRepo;
-    private final Sort sortStrategy;
     private final DataService dataService;
-
-    @Value("${cache.duration}")
-    private long CACHE_DURATION;
+    private final ScheduleCache cache;
 
 
     @Autowired
-    public ScheduleCacheManager(NFLEventRepository eventRepo, DataService dataService) {
+    public ScheduleCacheManager(NFLEventRepository eventRepo, DataService dataService, ScheduleCache cache) {
+        this.cache = cache;
         this.dataService = dataService;
-        this.lastUpdated = new Date();
         this.nflEventRepo = eventRepo;
-        this.sortStrategy = Sort.unsorted();
+
     }
 
     public void initCache(){
-        if (this.cacheIsStale() || this.scheduledEvents == null){
+        if (this.cache.isStale() || this.cache.getScheduledEvents() == null){
             this.updateCache();
         }
     }
 
 
     public List<NFLEvent> getScheduledEvents(){
-        if (this.cacheIsStale() || this.scheduledEvents == null){
+        if (this.cache.isStale()){
+            log.info("Cache miss. Refreshing cache");
+            log.info("Calling async method");
             this.updateCache();
-        }
+            log.info("continuing execution of main thread");
+        } else log.info("Cache hit");
+
+        var scheduledEvents = this.cache.getScheduledEvents();
         log.info(scheduledEvents.toString());
-        return this.scheduledEvents;
+
+        return scheduledEvents;
     }
 
 
-    private boolean cacheIsStale(){
-        return new Date().getTime() - this.lastUpdated.getTime() > CACHE_DURATION;
-    }
-
-
-    private void updateCache(){
+    @Async
+    public synchronized void updateCache(){
         this.dataService.updateData();
         ZonedDateTime now = ZonedDateTime.now();
-        this.scheduledEvents = this.dataService.getMappedEvents()
+
+        var scheduledEvents = this.dataService.getMappedEvents()
                 .stream()
                 .filter(event -> eventDateIsAfterNow(event, now))
                 .toList();
+        this.cache.setCache(scheduledEvents);
+
+        log.info("asynchronous cache update completed");
     }
 
-    private boolean eventDateIsAfterNow(NFLEvent event, ZonedDateTime now) {
+    private static boolean eventDateIsAfterNow(NFLEvent event, ZonedDateTime now) {
 //        Instant date = Instant.parse(event.getDate());
         DateTimeFormatter iso9075Formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ssXXX");
 
