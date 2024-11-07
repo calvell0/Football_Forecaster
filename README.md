@@ -18,6 +18,7 @@ MYSQL_USER=<your_mysql_username>
 MYSQL_PASSWORD=<your_mysql_password>
 MYSQL_HOST=localhost
 MYSQL_PORT=3306
+API_BASE_URL=https://site.api.espn.com/apis/site/v2/sports/football/nfl/
 ```
 5. Open a terminal in the `./scripts` directory and run `npm run compile_and_run` to compile the TypeScript files, run the
 script to initialize the database, and populate it with data from ESPN
