@@ -8,11 +8,10 @@ import org.springframework.stereotype.Component;
 public class ScheduleInitializer implements CommandLineRunner {
 
     private final ScheduleCacheManager scheduleCacheManager;
-    private ScheduleCacheManager cacheManager;
 
     @Autowired
-    public ScheduleInitializer(ScheduleCacheManager cacheManager, ScheduleCacheManager scheduleCacheManager){
-        this.cacheManager = cacheManager;
+    public ScheduleInitializer(ScheduleCacheManager scheduleCacheManager){
+
         this.scheduleCacheManager = scheduleCacheManager;
     }
 

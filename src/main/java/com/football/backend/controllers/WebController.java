@@ -33,7 +33,9 @@ public class WebController {
     @GetMapping("/")
     public String home (Model model) {
         List<Team> teams = teamRepository.findAll(Sort.by(Sort.Order.asc("id")));
+
         List<NFLEvent> scheduledEvents = this.cacheManager.getScheduledEvents();
+
         LOG.info(scheduledEvents.get(0).toString());
         model.addAttribute("teams", teams);
         model.addAttribute("scheduledEvents", scheduledEvents);
