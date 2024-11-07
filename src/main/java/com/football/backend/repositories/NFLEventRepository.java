@@ -10,6 +10,7 @@ import org.springframework.stereotype.Repository;
 
 import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -23,6 +24,9 @@ public interface NFLEventRepository extends ListPagingAndSortingRepository<NFLEv
 
     @Query("SELECT e.id FROM nfl_event e WHERE e.id IN (:ids)")
     List<Integer> findAllByIds(@Param("ids") Iterable<Integer> ids);
+
+    /*@Query("SELECT * FROM nfl_event e WHERE e.home_team = :homeTeamId AND e.away_team = :awayTeamId LIMIT 1")
+    Optional<NFLEvent> findByHomeTeamAndAwayTeam(@Param("homeTeamId") int homeTeamId, @Param("awayTeamId") int awayTeamId);*/
 
     /**
      * Bulk save a list of NFLEvents to the database. DO NOT USE IT DOESNT WORK

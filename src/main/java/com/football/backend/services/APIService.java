@@ -32,7 +32,7 @@ public class APIService {
     }
 
     public ResponseEntity<String> getNFLEventData() {
-        String url = API_BASE_URL + "scoreboard?limit=1000&dates=2024";
+        String url = API_BASE_URL + "scoreboard?limit=1000&dates=2024" ;//+ "scoreboard?limit=1000&dates=2024"
         return restTemplate.getForEntity(url, String.class);
     }
 
