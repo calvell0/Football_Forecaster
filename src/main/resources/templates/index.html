@@ -61,12 +61,13 @@
 
     <div class="container">
         <div class="search-section">
-            <select name="teams" id="search" multiple multiselect-search="true">
+            <h2>Pick 2 teams</h2>
+           <!-- <select name="teams" id="search" multiple multiselect-search="true">
                 <option th:each="team : ${teams}" th:value="${team.id}" th:text="${team.displayName}"></option>
-            </select>
-            <a id="prediction-anchor" href="/prediction/">
-                <button id="get-prediction">Get Prediction</button>
-            </a>
+            </select>-->
+            <!-- < <a id="prediction-anchor" href="/prediction/">
+                  <button id="get-prediction">Get Prediction</button>
+            </a>-->
         </div>
 
         <div class="dropdown-container">
@@ -129,7 +130,7 @@
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/flatpickr/4.6.9/flatpickr.min.js"></script>
 <script>
-  /*  function findGameDates() {
+    function findGameDates() {
         // Get the values from the search bars
         const teamName1 = document.getElementById('query').value;
         const teamName2 = document.getElementById('query2').value;
@@ -139,41 +140,72 @@
         const team2Ab = document.getElementById('query2').getAttribute('short');
         let shortName = "";
 
-        if (teamName1 !== null && teamName1 !== undefined && teamName2 !== null && teamName2 !== undefined) {
+        if (teamName1 && teamName2) {
             shortName = team1Ab + " @ " + team2Ab;
         }
-        // Print the values to the console
+
         console.log("Team 1 Name: " + teamName1 + " team1 id: " + teamId1 + " abv: " + team1Ab);
         console.log("Team 2 Name: " + teamName2 + " team2 id: " + teamId2 + " abv: " + team2Ab);
         console.log(shortName);
+
+        // First fetch attempt with initial homeTeamId and awayTeamId
         fetch(`/findGameDate?homeTeamId=${teamId1}&awayTeamId=${teamId2}`)
             .then(response => response.json())
             .then(data => {
                 if (data.status === "found") {
                     const gameDate = data.date;
-
-                    // Highlight the found date
                     const calendarInput = document.getElementById('game-date');
-                    calendarInput.value = gameDate; // Set the calendar to the found date
-                    calendarInput.style.backgroundColor = "yellow"; // Highlight it in yellow
+                    calendarInput.value = gameDate;
+                    const homeTeamId = teamId1;
+                    const awayTeamId = teamId2;
 
                     // Reinitialize Flatpickr to make sure it's set to the selected date
                     flatpickr("#game-date", {
                         defaultDate: gameDate,
                         enableTime: false,
                         dateFormat: "Y-m-d",
+                        onChange: function(selectedDates, dateStr, instance) {
+                            // Navigate to prediction.html with the selected date as a query parameter
+                            window.location.href = `/prediction?home=${homeTeamId}&away=${awayTeamId}`;
+                        }
                     });
                 } else {
-                    alert("No game found for the selected teams.");
+                    // If no game was found, retry with the home/away team IDs swapped
+                    console.log("No game found, trying with swapped team IDs...");
+                    fetch(`/findGameDate?homeTeamId=${teamId2}&awayTeamId=${teamId1}`)
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.status === "found") {
+                                const gameDate = data.date;
+                                const calendarInput = document.getElementById('game-date');
+                                calendarInput.value = gameDate;
+                                const homeTeamId = teamId2;
+                                const awayTeamId = teamId1;
+                                // Reinitialize Flatpickr with the found date
+                                flatpickr("#game-date", {
+                                    defaultDate: gameDate,
+                                    enableTime: false,
+                                    dateFormat: "Y-m-d",
+                                    onChange: function(selectedDates, dateStr, instance) {
+                                        // Navigate to prediction.html with the selected date as a query parameter
+                                        window.location.href = `/prediction?home=${homeTeamId}&away=${awayTeamId}`;
+                                    }
+                                });
+                            } else {
+                                alert("No game found for the selected teams.");
+                            }
+                        })
+                        .catch(error => {
+                            console.error("Error finding game date with swapped IDs:", error);
+                            alert("There was an error finding the game date.");
+                        });
                 }
             })
             .catch(error => {
                 console.error("Error finding game date:", error);
                 alert("There was an error finding the game date.");
             });
-
-
-    }*/
+    }
     flatpickr("#game-date", {
         enableTime: false,
         dateFormat: "Y-m-d",

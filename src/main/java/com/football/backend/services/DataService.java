@@ -13,6 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 
+import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeFormatterBuilder;
@@ -37,7 +38,6 @@ public class DataService {
     private List<Competitor> mappedCompetitors;
     private Set<Integer> existingEventIds;
 
-
     @Autowired
     public DataService(APIService apiService, ObjectMapper mapper, TeamRepository teamRepository, CompetitorRepository competitorRepository, NFLEventRepository eventRepository) {
         this.apiService = apiService;
@@ -46,7 +46,7 @@ public class DataService {
         this.competitorRepository = competitorRepository;
         this.eventRepository = eventRepository;
         this.mappedEvents = new ArrayList<>(ESTIMATED_NUM_OF_EVENTS);
-        this.mappedCompetitors = new ArrayList<>(ESTIMATED_NUM_OF_EVENTS * 2); //2 competitors for each event
+        this.mappedCompetitors = new ArrayList<>(ESTIMATED_NUM_OF_EVENTS * 2); // 2 competitors for each event
     }
 
     public List<NFLEvent> getMappedEvents() {
@@ -67,55 +67,30 @@ public class DataService {
         }
     }
 
-
-
-
     private void parseEventsAndCompetitors(ResponseEntity<String> response) throws JsonProcessingException {
-
-        /*
-          we want to initialize the arraylist with enough capacity for all of our events if we can,
-          so that we don't waste compute time repeatedly allocating memory for each new event
-         */
-
 
         JsonNode root = mapper.readTree(response.getBody());
 
-        //TODO: map json response data to NFLEvent objects
+        // Iterate through the events
         Iterator<JsonNode> events = root.get("events").elements();
 
-        while (events.hasNext()) try {
-            {
+        while (events.hasNext()) {
+            try {
                 JsonNode event = events.next();
-                /*
-                    for each event:
-                        extract data nested deeper into json structure
-                        use to construct NFLEvent object, Competitor object
-                        add NFLEvent object to mappedEvents list, Competitor -> Competitor list
 
-                 */
-
-                /*
-                    DEALING WITH DATES:
-                        translate response date (String, ISO8601 format) to ISO9075 format
-                 */
-
-                //Inactive teams are all-star teams. We don't care about these games.
+                // Skip events that don't have active teams
                 if (!hasActiveTeam(event)) {
                     continue;
                 }
 
-
-
-
-                //extracting data from json response object
+                // Extract event data
                 int id = event.get("id").asInt();
                 String uid = event.get("uid").asText();
-                //MySQL date format uses ISO9075 format, but ESPN sends us ISO8601 dates, so we need to convert them
-                String date = parseAndFormatDateString(event.get("date").asText());
+                // Convert the date string to LocalDateTime
+                LocalDateTime date = parseAndFormatDateString(event.get("date").asText());
                 String shortName = event.get("shortName").asText();
                 int seasonYear = event.get("season").get("year").asInt();
                 JsonNode competition = event.get("competitions").get(0);
-                int competitionType = competition.get("type").get("id").asInt();
                 boolean isConferenceCompetition = competition.get("conferenceCompetition").asBoolean();
                 boolean isNeutralSite = competition.get("neutralSite").asBoolean();
                 int homeId = competition.get("competitors").get(0).get("id").asInt();
@@ -124,7 +99,10 @@ public class DataService {
                 Team awayTeam = teamRepository.findById(awayId);
                 String status = competition.get("status").get("type").get("name").asText();
 
-                var newEvent = new NFLEvent(id,
+
+                Integer competitionType = 0;
+
+                NFLEvent newEvent = new NFLEvent(id,
                         uid,
                         date,
                         shortName,
@@ -142,12 +120,9 @@ public class DataService {
                 JsonNode competitorsRootNode = competition.get("competitors");
                 JsonNode[] competitors = { competitorsRootNode.get(0), competitorsRootNode.get(1) };
 
-                //extracting competitor data from json response object
-                for (JsonNode competitor : competitors){
-                    //eventId = id
+                // Extract and create Competitor objects
+                for (JsonNode competitor : competitors) {
                     int teamId = competitor.get("id").asInt();
-
-                    //Games that haven't happened yet don't have a "winner" field
                     JsonNode winnerNode = competitor.get("winner");
                     Boolean winner = (winnerNode != null) ? winnerNode.asBoolean() : null;
 
@@ -161,25 +136,21 @@ public class DataService {
                     this.mappedCompetitors.add(newCompetitor);
                 }
 
-
-
+            } catch (Exception e) {
+                log.error("Exception type: {}", e.getClass().getName());
+                log.error("Error parsing event data: {}", e.getMessage());
+                throw e;
             }
-        } catch (Exception e) {
-            log.error("Exception type: {}", e.getClass().getName());
-            log.error("Error parsing event data: {}", e.getMessage());
-            throw e;
         }
-
-
     }
 
-    /**
-     * Transforms an ISO8601-formatted date string to ISO9075 format.
-     * @param date - date string in ISO8601 format
-     * @return - date string in ISO9075 format
-     */
-    public static String parseAndFormatDateString(String date) {
 
+    /**
+     * Transforms an ISO8601-formatted date string to LocalDateTime.
+     * @param date - date string in ISO8601 format
+     * @return - LocalDateTime object
+     */
+    public static LocalDateTime parseAndFormatDateString(String date) {
 
         DateTimeFormatter iso8601Formatter = new DateTimeFormatterBuilder()
                 .appendPattern("yyyy-MM-dd'T'HH:mm")
@@ -191,8 +162,7 @@ public class DataService {
 
         ZonedDateTime zdt = ZonedDateTime.parse(date, iso8601Formatter);
 
-        DateTimeFormatter iso9075Formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ssXXX");
-        return zdt.format(iso9075Formatter);
+        return zdt.toLocalDateTime(); // Return as LocalDateTime
     }
 
     private static Records parseRecords(JsonNode recordNode) {
@@ -201,13 +171,12 @@ public class DataService {
         return new Records(Integer.parseInt(home[0]), Integer.parseInt(home[1]), Integer.parseInt(away[0]), Integer.parseInt(away[1]));
     }
 
-    /**Given an "event" json node, check if teams are active teams
-     *
+    /** Given an "event" json node, check if teams are active teams
      * @param eventNode
      * @return
      */
     private static boolean hasActiveTeam(JsonNode eventNode) {
-        for (JsonNode competitor: eventNode.get("competitions").get(0).get("competitors")) {
+        for (JsonNode competitor : eventNode.get("competitions").get(0).get("competitors")) {
             if (competitor.get("team").get("isActive").asBoolean()) {
                 return true;
             }
@@ -217,6 +186,4 @@ public class DataService {
 
 }
 
-record Records(int homeWins, int homeLosses, int awayWins, int awayLosses){
-
-};
+record Records(int homeWins, int homeLosses, int awayWins, int awayLosses) { }

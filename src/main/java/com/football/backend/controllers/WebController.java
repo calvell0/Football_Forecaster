@@ -48,24 +48,28 @@ public class WebController {
         model.addAttribute("scheduledEvents", scheduledEvents);
         return "index";
     }
-  /*  @GetMapping("/findGameDate")
+    @GetMapping("/findGameDate")
     @ResponseBody
     public Map<String, Object> findGameDate(@RequestParam("homeTeamId") int homeTeamId, @RequestParam("awayTeamId") int awayTeamId) {
-        Map<String, Object> response = new HashMap<>();
+        LOG.info("Searching for game with Home Team ID: {} and Away Team ID: {}", homeTeamId, awayTeamId);
 
-        // Query the database for an event with matching home and away team IDs
+        Map<String, Object> response = new HashMap<>();
         Optional<NFLEvent> nflEventOpt = nflEventRepository.findByHomeTeamAndAwayTeam(homeTeamId, awayTeamId);
 
         if (nflEventOpt.isPresent()) {
             NFLEvent nflEvent = nflEventOpt.get();
-            response.put("date", nflEvent.getDate().toString()); // Convert date to string for easier frontend handling
+            LOG.info("Game found with date: {}", nflEvent.getDate());
+
+            response.put("date", nflEvent.getDate().toString());
             response.put("status", "found");
         } else {
+            LOG.info("No game found for Home Team ID: {} and Away Team ID: {}", homeTeamId, awayTeamId);
             response.put("status", "not_found");
         }
 
         return response;
-    }*/
+    }
+
 
     @GetMapping("/prediction")
     public String matchupPrediction(@RequestParam(name="home") int homeId, @RequestParam(name="away") int awayId, Model model) {

@@ -6,6 +6,8 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.domain.Persistable;
 import org.springframework.data.relational.core.mapping.Table;
 
+import java.time.LocalDateTime;
+
 @JsonIgnoreProperties(ignoreUnknown = true)
 @Table("nfl_event")
 public class NFLEvent implements Persistable<Integer> {
@@ -14,11 +16,11 @@ public class NFLEvent implements Persistable<Integer> {
     private Integer id;
 
     private String uid;
-    private String date;
+    private LocalDateTime date;
     private String shortName;
     private int seasonYear;
-    private int competitionType;
-    private boolean conferenceCompetition;
+    private Integer competitionType;
+    private boolean conferenceCompetition ;
     private boolean neutralSite;
     private Team homeTeam;
     private Team awayTeam;
@@ -27,7 +29,7 @@ public class NFLEvent implements Persistable<Integer> {
     @JsonIgnore
     private boolean isNew = false;
 
-    public NFLEvent(int id, String uid, String date, String shortName, int seasonYear, int competitionType, boolean conferenceCompetition, boolean neutralSite, Team homeTeam, Team awayTeam, String status) {
+    public NFLEvent(int id, String uid, LocalDateTime date, String shortName, int seasonYear, int competitionType, boolean conferenceCompetition, boolean neutralSite, Team homeTeam, Team awayTeam, String status) {
         this.id = id;
         this.uid = uid;
         this.date = date;
@@ -66,11 +68,11 @@ public class NFLEvent implements Persistable<Integer> {
         this.uid = uid;
     }
 
-    public String getDate() {
+    public LocalDateTime getDate() {
         return date;
     }
 
-    public void setDate(String date) {
+    public void setDate(LocalDateTime date) {
         this.date = date;
     }
 

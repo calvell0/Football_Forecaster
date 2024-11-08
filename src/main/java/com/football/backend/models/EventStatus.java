@@ -1,5 +1,6 @@
 package com.football.backend.models;
 
+
 public enum EventStatus {
     SCHEDULED("STATUS_SCHEDULED"),
     FINAL("STATUS_FINAL"),

@@ -7,6 +7,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cglib.core.Local;
 import org.springframework.data.domain.Sort;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
@@ -16,11 +17,13 @@ import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.Instant;
+import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
+import java.time.ZoneId;
 
 
 //TODO: Maybe refactor this class into a separate ScheduleCache and ScheduleCacheManager to adhere to SRP
@@ -80,7 +83,7 @@ public class ScheduleCacheManager {
 
         var scheduledEvents = this.dataService.getMappedEvents()
                 .stream()
-                .filter(event -> eventDateIsAfterNow(event, now))
+                .filter(event -> eventDateIsAfterNow( event,  now))
                 .toList();
         this.cache.setCache(scheduledEvents);
 
@@ -88,14 +91,14 @@ public class ScheduleCacheManager {
     }
 
     private static boolean eventDateIsAfterNow(NFLEvent event, ZonedDateTime now) {
-//        Instant date = Instant.parse(event.getDate());
-        DateTimeFormatter iso9075Formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ssXXX");
+        DateTimeFormatter iso9075Formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
-        ZonedDateTime date = ZonedDateTime.parse(event.getDate(), iso9075Formatter);
+        LocalDateTime localDateTime = event.getDate();
 
 
-        return date.isAfter(now);
+        ZonedDateTime eventDateTime = localDateTime.atZone(ZoneId.systemDefault());
 
+        return eventDateTime.isAfter(now);
     }
 
 
