@@ -114,11 +114,11 @@ export class DataService {
                             id: parseInt(event.competitions[0].id),
                             uid: event.competitions[0].uid,
                             date: event.competitions[0].date,
-                            competitionType: event.competitions[0].competitionType,
                             timeValid: !!event.competitions[0].timeValid,
                             neutralSite: !!event.competitions[0].neutralSite,
                             conferenceCompetition: !!event.competitions[0].conferenceCompetition,
                             venue: {id: event.competitions[0].venue.id},
+                            type: parseInt(event.competitions[0].type.id),
                             competitors: [
                                 {
                                     team: this.getTeamByUid(event.competitions[0].competitors[0].team.uid),

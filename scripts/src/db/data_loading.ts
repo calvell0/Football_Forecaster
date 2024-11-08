@@ -36,6 +36,7 @@ export const persist_teams = async (teams: Team[]) => {
 export const persist_events = async (events: NFLEvent[]) => {
     const host = await connect();
 
+
     await host.query(`INSERT INTO NFL_Event
                                 (id, uid, date, short_name, season_year,
                                  competition_type, conference_competition,
@@ -44,7 +45,7 @@ export const persist_events = async (events: NFLEvent[]) => {
         [ //mysql accepts batch inserts as a double-nested array
             events.map(event =>
                 [
-                    event.id, event.uid, event.date, event.shortName, event.season.year, event.competitions[0].competitionType,
+                    event.id, event.uid, event.date, event.shortName, event.season.year, event.competitions[0].type,
                     event.competitions[0].conferenceCompetition, event.competitions[0].neutralSite, event.status,
                     event.competitions[0].competitors[0].team.id, event.competitions[0].competitors[1].team.id
                 ]

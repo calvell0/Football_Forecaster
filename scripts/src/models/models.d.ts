@@ -46,7 +46,7 @@ export interface Competition{
     id: number;
     uid: string;
     date: string;
-    competitionType: string;
+    type: number;
     timeValid: boolean;
     neutralSite: boolean;
     conferenceCompetition: boolean;
