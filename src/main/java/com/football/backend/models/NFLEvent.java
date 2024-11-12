@@ -140,6 +140,11 @@ public class NFLEvent implements Persistable<Integer> {
         this.status = status;
     }
 
+    public boolean containsTeams(int team1Id, int team2Id){
+        return (this.homeTeam.getId() == team1Id && this.awayTeam.getId() == team2Id) ||
+                (this.homeTeam.getId() == team2Id && this.awayTeam.getId() == team1Id);
+    }
+
     @Override
     public String toString() {
         return "NFLEvent{" +

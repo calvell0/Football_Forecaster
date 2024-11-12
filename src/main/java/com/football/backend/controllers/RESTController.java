@@ -14,14 +14,14 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.List;
 
 @RestController
-public class DataRequestController {
+public class RESTController {
 
-    private final Logger log = LoggerFactory.getLogger(DataRequestController.class);
+    private final Logger log = LoggerFactory.getLogger(RESTController.class);
     private final TeamRepository teamRepository;
     private final ScheduleCacheManager scheduleCacheManager;
 
     @Autowired
-    public DataRequestController(TeamRepository teamRepository, ScheduleCacheManager scheduleCacheManager) {
+    public RESTController(TeamRepository teamRepository, ScheduleCacheManager scheduleCacheManager) {
         this.teamRepository = teamRepository;
         this.scheduleCacheManager = scheduleCacheManager;
     }

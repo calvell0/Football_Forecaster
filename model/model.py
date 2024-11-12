@@ -15,39 +15,18 @@ class NFLPredictor:
         self.base_url = "https://site.api.espn.com/apis/site/v2/sports/football/nfl"
 
     def fetch_team_stats(self, team_id):
-        """Fetch team statistics from ESPN API"""
+
         try:
-            url = f"{self.base_url}/teams/{team_id}/statistics"
-            response = requests.get(url)
-            data = response.json()
-
-            # Extract relevant statistics
-            stats = {}
-            if 'splits' in data:
-                categories = data['splits']['categories']
-                for category in categories:
-                    if category['name'] == 'offense':
-                        for stat in category['stats']:
-                            stats[f"offense_{stat['name']}"] = float(stat['value'])
-                    elif category['name'] == 'defense':
-                        for stat in category['stats']:
-                            stats[f"defense_{stat['name']}"] = float(stat['value'])
-
-            return stats
+            #TODO: Fetch team stats
+            return []
         except Exception as e:
             print(f"Error fetching stats for team {team_id}: {e}")
             return {}
 
     def fetch_historical_games(self, season=2023):
-        """Fetch historical game data from ESPN API"""
+        #TODO: Fetch historical data from database
         try:
-            url = f"{self.base_url}/scoreboard"
-            params = {
-                'limit': 1000,
-                'dates': season
-            }
-            response = requests.get(url, params=params)
-            return response.json()['events']
+            return []
         except Exception as e:
             print(f"Error fetching historical games: {e}")
             return []

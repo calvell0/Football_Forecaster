@@ -42,7 +42,7 @@ export interface Season {
     type: SeasonType;
 }
 
-export interface Competition{
+export interface Competition {
     id: number;
     uid: string;
     date: string;

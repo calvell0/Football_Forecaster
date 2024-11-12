@@ -16,10 +16,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 @Controller
 public class WebController {
@@ -48,13 +45,22 @@ public class WebController {
         model.addAttribute("scheduledEvents", scheduledEvents);
         return "index";
     }
+
     @GetMapping("/findGameDate")
     @ResponseBody
     public Map<String, Object> findGameDate(@RequestParam("homeTeamId") int homeTeamId, @RequestParam("awayTeamId") int awayTeamId) {
         LOG.info("Searching for game with Home Team ID: {} and Away Team ID: {}", homeTeamId, awayTeamId);
 
         Map<String, Object> response = new HashMap<>();
-        Optional<NFLEvent> nflEventOpt = nflEventRepository.findByHomeTeamAndAwayTeam(homeTeamId, awayTeamId);
+        long start = new Date().getTime();
+        Optional<NFLEvent> nflEventOpt = Optional.of(this.cacheManager.getScheduledEvents()
+                .stream()
+                .filter(event -> event.containsTeams(homeTeamId, awayTeamId))
+                .toList()
+                .getFirst()
+        );
+
+        LOG.info("Search took {} ms", new Date().getTime() - start);
 
         if (nflEventOpt.isPresent()) {
             NFLEvent nflEvent = nflEventOpt.get();
