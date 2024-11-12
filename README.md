@@ -25,7 +25,7 @@ script to initialize the database, and populate it with data from ESPN
 6. Navigate back to the root directory of the project
 7. Ensure that you have Java installed. Verify this by running `java -version` in your terminal.
 7. Resolve all dependencies for the Spring Boot application by running `./mvnw clean install`
-8. Run the resulting compiled Java application with `java -jar target/football-forecaster-0.0.1-SNAPSHOT.jar`
+8. Run the resulting compiled Java application with `./mvnw spring-boot:run` or `java -jar target/football-forecaster-0.0.1-SNAPSHOT.jar`
 9. Use the web application by navigating to http://localhost:8080 in your browser
 
 
