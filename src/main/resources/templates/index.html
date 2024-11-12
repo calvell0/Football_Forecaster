@@ -1,257 +1,74 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Football Forecaster</title>
-    <link rel="stylesheet" th:href="@{/styles/styles.css}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/flatpickr/4.6.9/flatpickr.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
-    <script th:src="@{/scripts/multiselect-dropdown.js}"></script>
-    <script>
-        // Toggles visibility of dropdown
-        function toggleDropdown(event, dropdownId) {
-            event.preventDefault(); // Prevent the default button behavior
-            const dropdown = document.getElementById(dropdownId);
-
-            // Check the current display style of the dropdown
-            if (dropdown.style.display === "none" || dropdown.style.display === "") {
-                dropdown.style.display = "block"; // Show the dropdown
-            } else {
-                dropdown.style.display = "none"; // Hide the dropdown
-            }
-        }
-
-        // Populate the teamData object
-        function populateTeamData() {
-            fetch('/teams')
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error('Network response was not ok ' + response.statusText);
-                    }
-                    return response.json();
-                })
-                .then(teamsArray => {
-                    console.log("Teams Array:", teamsArray);
-                    teamsArray.forEach(team => {
-                        teamData[team.id] = team.displayName;
-                    });
-                })
-                .catch(error => {
-                    console.error("There was a problem with the fetch operation:", error);
-                });
-        }
-
-        // Call the function to populate the data
-        populateTeamData();
-
-
-        function fillSearchField(teamId, queryFieldId) {
-            const teamName = teamData[teamId];
-
-            if (teamName) {
-                document.getElementById(queryFieldId).value = teamName;
-            } else {
-                console.error("Team not found for ID: " + teamId);
-            }
-        }
-    </script>
-
+    
 </head>
 
 <body>
-<header>
-    <h1>Football Forecaster</h1>
-</header>
-
-<main>
-    <div class="image-section">
-        <img th:src="@{/styles/images/football image.jpeg}" alt="Football image" class="football-image">
-    </div>
-
-    <div class="container">
-        <div class="search-section">
-            <h2>Pick 2 teams</h2>
-           <!-- <select name="teams" id="search" multiple multiselect-search="true">
-                <option th:each="team : ${teams}" th:value="${team.id}" th:text="${team.displayName}"></option>
-            </select>-->
-            <!-- < <a id="prediction-anchor" href="/prediction/">
-                  <button id="get-prediction">Get Prediction</button>
-            </a>-->
-        </div>
-
-        <div class="dropdown-container">
-            <div class="dropdown">
-                <form class="form1" id="form1">
-                    <input class="search-bar" type="search" id="query" name="q" placeholder="Search...." readonly>
-                    <button type="button" onclick="toggleDropdown(event, 'teamDropdown1')" class="dropbtn">
-                        <i class="fas fa-search"></i>
-                    </button>
-                </form>
-                <!-- TEMPLATE LITERAL -->
-                <div id="teamDropdown1" class="dropdown-content" style="display:none;">
-                    <ul>
-                        <li th:each="team : ${teams}">
-                            <a href="#"
-                               th:attr="onclick=|document.getElementById('query').value = '${team.displayName}';
-                               document.getElementById('query').setAttribute('data-id', '${team.id}');
-                               document.getElementById('query').setAttribute('short', '${team.abbreviation}');
-                               const dropdown = document.getElementById('teamDropdown1');
-                               dropdown.style.display = dropdown.style.display === 'block' ? 'none' : 'block';|"
-                               th:text="${team.displayName}"></a>
-                        </li>
-
-                    </ul>
+    <header>
+        <h1>Football Forecaster</h1>
+    </header>
+  
+<div class="banner-image">
+    <img src="https://fbschedules.com/wp-content/uploads/2024/07/USATSI_19021156-222x148.jpg" alt="NFL Banner">
+</div>
+  
+    <main>
+        <div class="container">
+            <div class="dropdown-container">
+                <h2>Pick 2 Teams</h2>
+                
+                <!-- Team Selection Dropdown 1 -->
+                <div class="dropdown">
+                    <form class="form1" id="form1">
+                        <input class="search-bar" type="search" id="query" name="q" placeholder="Search Team 1..." readonly>
+                        <button type="button" onclick="toggleDropdown(event, 'teamDropdown1')" class="dropbtn">
+                            <i class="fas fa-search"></i>
+                        </button>
+                    </form>
+                    <div id="teamDropdown1" class="dropdown-content" style="display:none;">
+                        <ul>
+                            <!-- Team options dynamically generated here -->
+                        </ul>
+                    </div>
+                </div>
+                
+                <!-- Team Selection Dropdown 2 -->
+                <div class="dropdown">
+                    <form class="form2" id="form2">
+                        <input class="search-bar" type="search" id="query2" name="q" placeholder="Search Team 2..." readonly>
+                        <button type="button" onclick="toggleDropdown(event, 'teamDropdown2')" class="dropbtn">
+                            <i class="fas fa-search"></i>
+                        </button>
+                    </form>
+                    <div id="teamDropdown2" class="dropdown-content" style="display:none;">
+                        <ul>
+                            <!-- Team options dynamically generated here -->
+                        </ul>
+                    </div>
                 </div>
             </div>
 
-            <div class="dropdown">
-                <form class="form2" id="form2">
-                    <input class="search-bar" type="search" id="query2" name="q" placeholder="Search...." readonly>
-                    <button type="button" onclick="toggleDropdown(event, 'teamDropdown2')" class="dropbtn">
-                        <i class="fas fa-search"></i>
-                    </button>
-                </form>
-                <div id="teamDropdown2" class="dropdown-content" style="display:none;">
-                    <ul>
-                        <li th:each="team : ${teams}">
-                            <a href="#"
-                               th:attr="onclick=|document.getElementById('query2').value =  '${team.displayName}';
-                                 document.getElementById('query2').setAttribute('data-id', '${team.id}');
-                                 document.getElementById('query2').setAttribute('short', '${team.abbreviation}');
-                                const dropdown = document.getElementById('teamDropdown2');
-                                dropdown.style.display = dropdown.style.display === 'block' ? 'none' : 'block';|"
-                               th:text="${team.displayName}"></a>
-                        </li>
+            <button class="findbttn" onclick="findGameDates()">Find Game Dates</button>
 
-                    </ul>
-                </div>
+            <div class="calendar-section">
+                <h2>Select Game Date</h2>
+                <input type="text" id="game-date" class="calendar-input" placeholder="Pick a date">
             </div>
         </div>
-        <button class = "findbttn"
-        onclick="findGameDates()">
-            Find Game Dates
-        </button>
-        <div class="calendar-section">
-            <h2>Select Game Date</h2>
-            <input type="text" id="game-date" class="calendar-input" placeholder="Pick a date">
-        </div>
-    </div>
-</main>
+    </main>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/flatpickr/4.6.9/flatpickr.min.js"></script>
-<script>
-    function findGameDates() {
-        // Get the values from the search bars
-        const teamName1 = document.getElementById('query').value;
-        const teamName2 = document.getElementById('query2').value;
-        const teamId1 = document.getElementById('query').getAttribute('data-id');
-        const teamId2 = document.getElementById('query2').getAttribute('data-id');
-        const team1Ab = document.getElementById('query').getAttribute('short');
-        const team2Ab = document.getElementById('query2').getAttribute('short');
-        let shortName = "";
-
-        if (teamName1 && teamName2) {
-            shortName = team1Ab + " @ " + team2Ab;
-        }
-
-        console.log("Team 1 Name: " + teamName1 + " team1 id: " + teamId1 + " abv: " + team1Ab);
-        console.log("Team 2 Name: " + teamName2 + " team2 id: " + teamId2 + " abv: " + team2Ab);
-        console.log(shortName);
-
-        // First fetch attempt with initial homeTeamId and awayTeamId
-        fetch(`/findGameDate?homeTeamId=${teamId1}&awayTeamId=${teamId2}`)
-            .then(response => response.json())
-            .then(data => {
-                if (data.status === "found") {
-                    const gameDate = data.date;
-                    const calendarInput = document.getElementById('game-date');
-                    calendarInput.value = gameDate;
-                    const homeTeamId = teamId1;
-                    const awayTeamId = teamId2;
-
-                    // Reinitialize Flatpickr to make sure it's set to the selected date
-                    flatpickr("#game-date", {
-                        defaultDate: gameDate,
-                        enableTime: false,
-                        dateFormat: "Y-m-d",
-                        onChange: function(selectedDates, dateStr, instance) {
-                            // Navigate to prediction.html with the selected date as a query parameter
-                            window.location.href = `/prediction?home=${homeTeamId}&away=${awayTeamId}`;
-                        }
-                    });
-                } else {
-                    // If no game was found, retry with the home/away team IDs swapped
-                    console.log("No game found, trying with swapped team IDs...");
-                    fetch(`/findGameDate?homeTeamId=${teamId2}&awayTeamId=${teamId1}`)
-                        .then(response => response.json())
-                        .then(data => {
-                            if (data.status === "found") {
-                                const gameDate = data.date;
-                                const calendarInput = document.getElementById('game-date');
-                                calendarInput.value = gameDate;
-                                const homeTeamId = teamId2;
-                                const awayTeamId = teamId1;
-                                // Reinitialize Flatpickr with the found date
-                                flatpickr("#game-date", {
-                                    defaultDate: gameDate,
-                                    enableTime: false,
-                                    dateFormat: "Y-m-d",
-                                    onChange: function(selectedDates, dateStr, instance) {
-                                        // Navigate to prediction.html with the selected date as a query parameter
-                                        window.location.href = `/prediction?home=${homeTeamId}&away=${awayTeamId}`;
-                                    }
-                                });
-                            } else {
-                                alert("No game found for the selected teams.");
-                            }
-                        })
-                        .catch(error => {
-                            console.error("Error finding game date with swapped IDs:", error);
-                            alert("There was an error finding the game date.");
-                        });
-                }
-            })
-            .catch(error => {
-                console.error("Error finding game date:", error);
-                alert("There was an error finding the game date.");
-            });
-    }
-    flatpickr("#game-date", {
-        enableTime: false,
-        dateFormat: "Y-m-d",
-    });
-
-    const teamData = {}; // Global variable to store team data
-
-
-
-
-
-    // Close dropdowns if clicked outside
-    document.addEventListener("click", function (e) {
-        const dropdowns = document.querySelectorAll(".dropdown-content");
-        dropdowns.forEach(dropdown => {
-            const isClickInsideDropdown = dropdown.contains(e.target);
-            const isClickOnButton = e.target.closest(".dropbtn");
-
-            if (!isClickInsideDropdown && !isClickOnButton) {
-                dropdown.style.display = "none"; // Hide the dropdown if clicked outside
-            }
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/flatpickr/4.6.9/flatpickr.min.js"></script>
+    <script>
+        flatpickr("#game-date", {
+            enableTime: false,
+            dateFormat: "Y-m-d",
         });
-    });
-
-
-    // Function to toggle dropdown visibility
-    function dropFunction(event, dropdownId) {
-        event.preventDefault(); // Prevent the default button behavior
-        const dropdown = document.getElementById(dropdownId);
-        dropdown.style.display = dropdown.style.display === "block" ? "none" : "block";
-    }
-
-
-</script>
+    </script>
 </body>
-
 </html>
