@@ -25,11 +25,22 @@
 
         // Populate the teamData object
         function populateTeamData() {
-            const teamsArray = /*[[${teams}]]*/ [];
-            console.log("Teams Array:", teamsArray);
-            teamsArray.forEach(team => {
-                teamData[team.id] = team.displayName;
-            });
+            fetch('/teams')
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok ' + response.statusText);
+                    }
+                    return response.json();
+                })
+                .then(teamsArray => {
+                    console.log("Teams Array:", teamsArray);
+                    teamsArray.forEach(team => {
+                        teamData[team.id] = team.displayName;
+                    });
+                })
+                .catch(error => {
+                    console.error("There was a problem with the fetch operation:", error);
+                });
         }
 
         // Call the function to populate the data
@@ -78,6 +89,7 @@
                         <i class="fas fa-search"></i>
                     </button>
                 </form>
+                <!-- TEMPLATE LITERAL -->
                 <div id="teamDropdown1" class="dropdown-content" style="display:none;">
                     <ul>
                         <li th:each="team : ${teams}">
@@ -117,7 +129,7 @@
                 </div>
             </div>
         </div>
-        <button
+        <button class = "findbttn"
         onclick="findGameDates()">
             Find Game Dates
         </button>
@@ -238,19 +250,7 @@
         dropdown.style.display = dropdown.style.display === "block" ? "none" : "block";
     }
 
-    // Event listener for the search dropdown
-    document.getElementById('search').addEventListener('change', function() {
-        var selectedOptions = Array.from(this.selectedOptions);
-        if (selectedOptions.length >= 2) {
-            var firstTeamId = selectedOptions[0].value;
-            var secondTeamId = selectedOptions[1].value;
-            var newUrl = '/prediction?home=' + firstTeamId + '&away=' + secondTeamId;
-            document.getElementById("prediction-anchor").href = newUrl;
-        }
-    });
 
-    // Call this to populate the team data
-    populateTeamData();
 </script>
 </body>
 

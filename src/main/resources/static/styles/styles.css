@@ -88,7 +88,20 @@ header h1 {
 .dropbtn i {
     margin: 0; /* Remove any margin */
 }
-
+.findbttn{
+    background-color: #a8e6a3;
+    border: none;
+    color: grey;
+    padding: 10px 20px;
+    font-size: 16px;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+    margin-bottom: 10px;
+}
+.findbttn:hover{
+    background-color: #578d04;
+}
 .search-section {
     margin-bottom: 30px;
     width: 100%;
