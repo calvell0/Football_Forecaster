@@ -70,7 +70,7 @@ public class ScheduleCacheManager {
         } else log.info("Cache hit");
 
         var scheduledEvents = this.cache.getScheduledEvents();
-        log.info(scheduledEvents.toString());
+
 
         return scheduledEvents;
     }

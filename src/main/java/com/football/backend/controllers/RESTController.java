@@ -9,33 +9,38 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.List;
+import java.util.*;
 
 @RestController
 public class RESTController {
 
-    private final Logger log = LoggerFactory.getLogger(RESTController.class);
+    private final Logger LOG = LoggerFactory.getLogger(RESTController.class);
     private final TeamRepository teamRepository;
-    private final ScheduleCacheManager scheduleCacheManager;
+    private final ScheduleCacheManager cacheManager;
 
     @Autowired
-    public RESTController(TeamRepository teamRepository, ScheduleCacheManager scheduleCacheManager) {
+    public RESTController(TeamRepository teamRepository, ScheduleCacheManager cacheManager) {
         this.teamRepository = teamRepository;
-        this.scheduleCacheManager = scheduleCacheManager;
+        this.cacheManager = cacheManager;
     }
+
+
+
 
     @GetMapping("/teams")
     public List<Team> getTeams() {
-        log.info("GET /teams");
+        LOG.info("GET /teams");
         return teamRepository.findAll(Sort.by(Sort.Order.asc("id")));
     }
 
 
     @GetMapping("/schedule")
     public List<NFLEvent> getEvents(){
-        log.info("GET /schedule");
-        return scheduleCacheManager.getScheduledEvents();
+        LOG.info("GET /schedule");
+        return cacheManager.getScheduledEvents();
     }
 }

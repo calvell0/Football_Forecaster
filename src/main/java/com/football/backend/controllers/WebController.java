@@ -1,8 +1,10 @@
 package com.football.backend.controllers;
 
+import com.football.backend.models.Logo;
 import com.football.backend.models.NFLEvent;
 import com.football.backend.models.Team;
 import com.football.backend.models.PlaceholderPrediction;
+import com.football.backend.repositories.LogoRepository;
 import com.football.backend.repositories.NFLEventRepository;
 import com.football.backend.repositories.TeamRepository;
 import com.football.backend.services.ScheduleCacheManager;
@@ -26,12 +28,14 @@ public class WebController {
     private final TeamRepository teamRepository;
     private final ScheduleCacheManager cacheManager;
     private final NFLEventRepository nflEventRepository;
+    private final LogoRepository logoRepository;
 
     @Autowired
-    public WebController(TeamRepository teamRepository, ScheduleCacheManager cacheManager, NFLEventRepository nflEventRepository) {
+    public WebController(TeamRepository teamRepository, ScheduleCacheManager cacheManager, NFLEventRepository nflEventRepository, LogoRepository logoRepository) {
         this.teamRepository = teamRepository;
         this.cacheManager = cacheManager;
         this.nflEventRepository = nflEventRepository;
+        this.logoRepository = logoRepository;
     }
 
     @GetMapping("/")
@@ -39,9 +43,10 @@ public class WebController {
         List<Team> teams = teamRepository.findAll(Sort.by(Sort.Order.asc("id")));
 
         List<NFLEvent> scheduledEvents = this.cacheManager.getScheduledEvents();
-
+        List<Logo> logos = logoRepository.findAll();
         LOG.info(scheduledEvents.get(0).toString());
         model.addAttribute("teams", teams);
+        model.addAttribute("logos", logos);
         model.addAttribute("scheduledEvents", scheduledEvents);
         return "index";
     }
@@ -81,8 +86,12 @@ public class WebController {
     public String matchupPrediction(@RequestParam(name="home") int homeId, @RequestParam(name="away") int awayId, Model model) {
         Team home = this.teamRepository.findById(homeId);
         Team away = this.teamRepository.findById(awayId);
+        Logo homeLogo = logoRepository.findOneByTeamId(homeId);
+        Logo awayLogo = logoRepository.findOneByTeamId(awayId);
         model.addAttribute("homeTeam", home);
         model.addAttribute("awayTeam", away);
+        model.addAttribute("homeLogo", homeLogo);
+        model.addAttribute("awayLogo", awayLogo);
         model.addAttribute("prediction", new PlaceholderPrediction(true, 0.5));
 
         return "prediction";
