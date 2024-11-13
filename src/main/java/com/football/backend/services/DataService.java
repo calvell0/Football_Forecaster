@@ -73,6 +73,8 @@ public class DataService {
 
         // Iterate through the events
         Iterator<JsonNode> events = root.get("events").elements();
+        List<NFLEvent> newMappedEvents = new ArrayList<>(ESTIMATED_NUM_OF_EVENTS);
+        List<Competitor> newMappedCompetitors = new ArrayList<>(ESTIMATED_NUM_OF_EVENTS * 2);
 
         while (events.hasNext()) {
             try {
@@ -115,7 +117,7 @@ public class DataService {
                         status
                 );
 
-                this.mappedEvents.add(newEvent);
+                newMappedEvents.add(newEvent);
 
                 JsonNode competitorsRootNode = competition.get("competitors");
                 JsonNode[] competitors = { competitorsRootNode.get(0), competitorsRootNode.get(1) };
@@ -133,7 +135,7 @@ public class DataService {
                     int awayLosses = records.awayLosses();
 
                     Competitor newCompetitor = new Competitor(teamId, id, winner, homeWins, homeLosses, awayWins, awayLosses);
-                    this.mappedCompetitors.add(newCompetitor);
+                    newMappedCompetitors.add(newCompetitor);
                 }
 
             } catch (Exception e) {
@@ -142,6 +144,8 @@ public class DataService {
                 throw e;
             }
         }
+        this.mappedEvents = newMappedEvents;
+        this.mappedCompetitors = newMappedCompetitors;
     }
 
 

@@ -161,11 +161,20 @@
         console.log(shortName);
 
         // First fetch attempt with initial homeTeamId and awayTeamId
-        fetch(`/findGameDate?homeTeamId=${teamId1}&awayTeamId=${teamId2}`)
-            .then(response => response.json())
-            .then(data => {
-                if (data.status === "found") {
-                    const gameDate = data.date;
+        fetch(`/events?homeId=${teamId1}&awayId=${teamId2}`)
+            .then(async response => { //here we are packaging the response into an object so that the status code can be passed with the data
+               return {
+                    status: response.status,
+                    data: await response.json() //force the function to wait for .json() to finish
+                }
+            })
+            .then(response => {
+                console.log(response);
+                if (response.status === 200) {
+                    //TODO: the /events endpoint now returns a list of events matching both team ids
+                    //TODO: maybe change this to select multiple dates if multiple events are returned
+                    console.log("date:", response.data[0].date);
+                    const gameDate = response.data[0].date;
                     const calendarInput = document.getElementById('game-date');
                     calendarInput.value = gameDate;
                     const homeTeamId = teamId1;
@@ -181,36 +190,6 @@
                             window.location.href = `/prediction?home=${homeTeamId}&away=${awayTeamId}`;
                         }
                     });
-                } else {
-                    // If no game was found, retry with the home/away team IDs swapped
-                    console.log("No game found, trying with swapped team IDs...");
-                    fetch(`/findGameDate?homeTeamId=${teamId2}&awayTeamId=${teamId1}`)
-                        .then(response => response.json())
-                        .then(data => {
-                            if (data.status === "found") {
-                                const gameDate = data.date;
-                                const calendarInput = document.getElementById('game-date');
-                                calendarInput.value = gameDate;
-                                const homeTeamId = teamId2;
-                                const awayTeamId = teamId1;
-                                // Reinitialize Flatpickr with the found date
-                                flatpickr("#game-date", {
-                                    defaultDate: gameDate,
-                                    enableTime: false,
-                                    dateFormat: "Y-m-d",
-                                    onChange: function(selectedDates, dateStr, instance) {
-                                        // Navigate to prediction.html with the selected date as a query parameter
-                                        window.location.href = `/prediction?home=${homeTeamId}&away=${awayTeamId}`;
-                                    }
-                                });
-                            } else {
-                                alert("No game found for the selected teams.");
-                            }
-                        })
-                        .catch(error => {
-                            console.error("Error finding game date with swapped IDs:", error);
-                            alert("There was an error finding the game date.");
-                        });
                 }
             })
             .catch(error => {

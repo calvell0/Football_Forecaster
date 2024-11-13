@@ -51,36 +51,6 @@ public class WebController {
         return "index";
     }
 
-    @GetMapping("/findGameDate")
-    @ResponseBody
-    public Map<String, Object> findGameDate(@RequestParam("homeTeamId") int homeTeamId, @RequestParam("awayTeamId") int awayTeamId) {
-        LOG.info("Searching for game with Home Team ID: {} and Away Team ID: {}", homeTeamId, awayTeamId);
-
-        Map<String, Object> response = new HashMap<>();
-        long start = new Date().getTime();
-        Optional<NFLEvent> nflEventOpt = Optional.of(this.cacheManager.getScheduledEvents()
-                .stream()
-                .filter(event -> event.containsTeams(homeTeamId, awayTeamId))
-                .toList()
-                .getFirst()
-        );
-
-        LOG.info("Search took {} ms", new Date().getTime() - start);
-
-        if (nflEventOpt.isPresent()) {
-            NFLEvent nflEvent = nflEventOpt.get();
-            LOG.info("Game found with date: {}", nflEvent.getDate());
-
-            response.put("date", nflEvent.getDate().toString());
-            response.put("status", "found");
-        } else {
-            LOG.info("No game found for Home Team ID: {} and Away Team ID: {}", homeTeamId, awayTeamId);
-            response.put("status", "not_found");
-        }
-
-        return response;
-    }
-
 
     @GetMapping("/prediction")
     public String matchupPrediction(@RequestParam(name="home") int homeId, @RequestParam(name="away") int awayId, Model model) {

@@ -8,6 +8,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
@@ -28,7 +30,32 @@ public class RESTController {
         this.cacheManager = cacheManager;
     }
 
+    /**
+     * Get all events with the given home and away team IDs
+     * @param homeTeamId
+     * @param awayTeamId
+     * @return
+     * notes: Changed route from /findGameDate to /events to more closely follow REST conventions
+     */
+    @GetMapping("/events")
+    public ResponseEntity<List<NFLEvent>> findGameDate(@RequestParam("homeId") int homeTeamId, @RequestParam("awayId") int awayTeamId) {
+        LOG.info("Searching for events with Home Team ID: {} and Away Team ID: {}", homeTeamId, awayTeamId);
 
+        long start = new Date().getTime();
+        var queriedEvents = cacheManager.getScheduledEvents()
+                .stream()
+                .filter(event -> event.containsTeams(homeTeamId, awayTeamId))
+                .toList();
+
+        LOG.info("Search took {} ms", new Date().getTime() - start);
+
+        if (queriedEvents.isEmpty()){
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+        var response = new ResponseEntity<>(queriedEvents, HttpStatus.OK);
+        LOG.info(response.toString());
+        return response;
+    }
 
 
     @GetMapping("/teams")
@@ -38,7 +65,7 @@ public class RESTController {
     }
 
 
-    @GetMapping("/schedule")
+    @GetMapping("/events/schedule")
     public List<NFLEvent> getEvents(){
         LOG.info("GET /schedule");
         return cacheManager.getScheduledEvents();
