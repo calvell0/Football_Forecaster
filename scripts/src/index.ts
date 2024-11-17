@@ -15,6 +15,8 @@ const dataService = await DataService.build(new HttpDataClient());
 console.log("Saving teams to db...");
 await dataService.persistTeams();
 await dataService.persistEvents();
+console.log("Persist events completed, fetching box scores...");
+await dataService.fetchBoxScores();
 
 
 

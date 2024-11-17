@@ -63,12 +63,12 @@ export interface Competitor {
     homeAway: boolean;
     winner: boolean | null;
     score: number;
-    records: [Record, Record, Record];
+    records: [TeamRecord, TeamRecord, TeamRecord];
     event_id?: number;
 }
 
 
-export interface Record {
+export interface TeamRecord {
     type: RecordType;
     summary: string;
 }
@@ -77,4 +77,58 @@ export enum RecordType {
     HOME = "home",
     AWAY = "away",
     TOTAL = "total"
+}
+
+export interface Boxscore {
+    eventId: number;
+    teamId: number;
+    firstDowns?: number;
+    firstDownsPassing?: number;
+    firstDownsRushing?: number;
+    firstDownsPenalty?: number;
+    thirdDownConversions?: number;
+    thirdDownAttempts?: number;
+    fourthDownConversions?: number;
+    fourthDownAttempts?: number;
+    totalOffensivePlays?: number;
+    totalYards?: number;
+    totalDrives?: number;
+    netPassingYards?: number;
+    completions?: number;
+    completionAttempts?: number;
+    interceptionsThrown?: number;
+    sacksAgainst?: number;
+    yardsLost?: number;
+    rushingYards?: number;
+    rushingAttempts?: number;
+    redZoneAttempts?: number;
+    redZoneConversions?: number;
+    penalties?: number;
+    penaltyYards?: number;
+    turnovers?: number;
+    fumblesLost?: number;
+    passingTouchdowns?: number;
+    rushingTouchdowns?: number;
+    passerRating?: number;
+    tackles?: number;
+    sacks?: number;
+    tacklesForLoss?: number;
+    passesDefended?: number;
+    defensiveInterceptions?: number;
+    defensiveTouchdowns?: number;
+    kickReturns?: number;
+    kickReturnYards?: number;
+    puntReturns?: number;
+    puntReturnYards?: number;
+    fieldGoalsMade?: number;
+    fieldGoalsAttempted?: number;
+    punts?: number;
+    puntYards?: number;
+}
+
+//TODO: finish this
+export interface BoxScore {
+    event_id: number;
+    team_id: number;
+
 }

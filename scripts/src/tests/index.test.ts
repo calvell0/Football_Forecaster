@@ -5,7 +5,9 @@ import test from "node:test";
 import {HttpDataClient} from "../HTTPDataClient.js";
 
 
-const dataService = DataService.build(new MockDataClient());
+const dataService = await DataService.build(new MockDataClient());
+await dataService.fetchBoxScores();
+console.log(dataService.getBoxScores());
 
 // test("Team data populated", (t, done) => {
 //     const teams = dataService.getTeams();
