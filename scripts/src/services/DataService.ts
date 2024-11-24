@@ -1,18 +1,21 @@
 import {NFLEvent, Team, TeamRecord, Competition, Competitor, Boxscore} from "../models/models.d.js";
 import {DataClient} from "../models/DataClient.js";
-import {persist_events, persist_teams} from "../db/data_loading.js";
+import {persist_boxscores, persist_events, persist_teams} from "../db/data_loading.js";
 import {parseEventStatus} from "../utils/dataUtils.js";
 import {formatISO9075} from "date-fns";
 import {performance} from "perf_hooks";
+import {sleep} from "../utils/generalUtils.js";
+
+//TODO: maybe refactor a separate JSONObjectMapper class to handle JSON parsing
 
 
 export class DataService {
-    private readonly NUM_YEARS_BACK = 20;
+    private readonly NUM_YEARS_BACK = 16; // data gets funky and inconsistent more than 16 years back
     private readonly ESTIMATED_EVENTS_PER_YEAR = 375;
     private readonly ESTIMATED_NUM_BOXSCORES = this.NUM_YEARS_BACK * this.ESTIMATED_EVENTS_PER_YEAR;
     private dataClient: DataClient;
     private teams: Team[] = [];
-    private events: NFLEvent[] = new Array(this.ESTIMATED_EVENTS_PER_YEAR * this.NUM_YEARS_BACK);
+    private events: NFLEvent[] = new Array<NFLEvent>(this.ESTIMATED_EVENTS_PER_YEAR * this.NUM_YEARS_BACK);
     private eventCount = 0;
     private perfObserver: PerformanceObserver;
     private boxscoreResponses: Array<any>;
@@ -30,10 +33,10 @@ export class DataService {
         this.dataClient = dataClient;
     }
 
-    public static async build(dataClient: DataClient): Promise<DataService> {
+    public static async build(dataClient: DataClient, preserveDB: boolean = false): Promise<DataService> {
 
         const ds = new DataService(dataClient);
-        await ds.initialize();
+        preserveDB || await ds.initialize(); //populate events and teams if --preserve-db is not passed
         return ds;
     }
 
@@ -43,12 +46,9 @@ export class DataService {
         performance.mark("fetch-teams-end");
         performance.mark("fetch-events-start");
 
-        const eventRequests: Promise<void>[] = []
-        for (let year = 2023; year >= 2023 - this.NUM_YEARS_BACK; year--) {
-            eventRequests.push(this.fetchEventData(year.toString()));
-        }
-        console.log(eventRequests);
-        await Promise.all(eventRequests);
+
+
+        await this.fetchEventData();
         console.log(`Event count: ${this.eventCount}`);
 
         this.events = this.events.filter((event) => event != undefined);
@@ -72,38 +72,146 @@ export class DataService {
         performance.measure("persist-events", "persist-events-start", "persist-events-end");
     }
 
+    public async persistBoxScores(): Promise<void> {
+        performance.mark("persist-boxscores-start");
+        await persist_boxscores(this.boxscores);
+        performance.mark("persist-boxscores-end");
+        performance.measure("persist-boxscores", "persist-boxscores-start", "persist-boxscores-end");
+    }
+
     public async fetchTeamData(): Promise<void> {
         const teamData = await this.dataClient.getAllTeams();
-        // console.log(teamData);
-        for (let team of teamData) {
-            this.teams.push({
-                id: parseInt(team.id),
-                uid: team.uid,
-                slug: team.slug,
-                abbreviation: team.abbreviation,
-                displayName: team.displayName,
-                shortDisplayName: team.shortDisplayName,
-                color: team.color,
-                alternateColor: team.alternateColor,
-                isActive: team.isActive,
-                isAllStar: team.isAllStar,
-                logos: team.logos.map((logo: any) => logo.href)
-            } as Team);
-        }
+        this.teams = this.parseTeamData(teamData);
 
         return;
+    }
+
+    public async createSeasonStats(){
+
+    }
+
+
+
+    public async fetchEventData(): Promise<void> {
+        const events = await this.dataClient.getPastEvents(this.NUM_YEARS_BACK);
+        // console.log(events);
+        this.parseEventData(events);
+    }
+
+    private parseEventData(events) {
+        this.eventCount = 0;
+
+
+        for (let event of events) {
+            // console.log("[DEBUG] Iteration: " + iterCount++);
+
+            //ignore all-star games/teams and preseason games
+            if (!event.competitions[0].competitors[0].team.isActive || event.season.type == 1) {
+                continue;
+            }
+
+            this.events[this.eventCount++] = ({
+                    id: parseInt(event.id),
+                    uid: event.uid,
+                    date: formatISO9075(event.date), //MySQL doesn't accept ISO8601 dates, which is what ESPN API uses
+                    shortName: event.shortName,
+                    season: {
+                        year: event.season.year,
+                        type: event.season.type
+                    },
+                    week: event.week.number,
+                    status: parseEventStatus(event.status.type.name),
+                    competitions: [
+                        {
+                            id: parseInt(event.competitions[0].id),
+                            uid: event.competitions[0].uid,
+                            date: event.competitions[0].date,
+                            timeValid: !!event.competitions[0].timeValid,
+                            neutralSite: !!event.competitions[0].neutralSite,
+                            conferenceCompetition: !!event.competitions[0].conferenceCompetition,
+                            venue: {id: event.competitions[0].venue?.id},
+                            type: parseInt(event.competitions[0].type.id),
+                            competitors: [
+                                {
+                                    teamId: parseInt(event.competitions[0].competitors[0].team.id),
+                                    homeAway: !!event.competitions[0].competitors[0].homeAway,
+                                    winner: !!event.competitions[0].competitors[0].winner,
+                                    score: event.competitions[0].competitors[0].score,
+                                    records: [
+                                        {
+                                            type: event.competitions[0].competitors[0].records[0].type,
+                                            summary: event.competitions[0].competitors[0].records[0].summary
+                                        } as TeamRecord,
+                                        {
+                                            type: event.competitions[0].competitors[0].records[1].type,
+                                            summary: event.competitions[0].competitors[0].records[1].summary
+                                        } as TeamRecord,
+                                        {
+                                            type: event.competitions[0].competitors[0].records[2].type,
+                                            summary: event.competitions[0].competitors[0].records[2].summary
+                                        } as TeamRecord
+                                    ]
+                                } as Competitor,
+                                {
+                                    teamId: parseInt(event.competitions[0].competitors[1].team.id),
+                                    homeAway: !!event.competitions[0].competitors[1].homeAway,
+                                    winner: !!event.competitions[0].competitors[1].winner,
+                                    score: event.competitions[0].competitors[1].score,
+                                    records: [
+                                        {
+                                            type: event.competitions[0].competitors[1].records[0].type,
+                                            summary: event.competitions[0].competitors[1].records[0].summary
+                                        } as TeamRecord,
+                                        {
+                                            type: event.competitions[0].competitors[1].records[1].type,
+                                            summary: event.competitions[0].competitors[1].records[1].summary
+                                        } as TeamRecord,
+                                        {
+                                            type: event.competitions[0].competitors[1].records[2].type,
+                                            summary: event.competitions[0].competitors[1].records[2].summary
+                                        } as TeamRecord
+                                    ]
+                                } as Competitor
+                            ]
+                        } as Competition
+                    ]
+                } as NFLEvent
+            );
+        }
     }
 
     public async fetchBoxScores(): Promise<void> {
         const eventIds = this.events?.map((event) => event.id);
         console.log(`eventIds length: ${eventIds?.length}`);
         this.boxscoreResponses = await this.dataClient.getAllBoxScores(eventIds);
-        console.log(this.boxscoreResponses);
+        // console.log(this.boxscoreResponses);
+
+        //each call to parseBoxScores returns an array of 2 Boxscores, this calls parseBoxScores for each
+        //boxscore response and flattens the resulting array of arrays into a single array
         this.boxscores = this.boxscoreResponses.flatMap(DataService.parseBoxScores);
 
 
         console.log(`${this.boxscores.length} box scores fetched.`);
-        console.log(this.boxscores[0]);
+        // console.log(this.boxscores[0]);
+    }
+
+    private parseTeamData(teamData): Team[] {
+        return teamData.map((team)=> {
+            return ({
+                id: parseInt(team.id),
+                uid: team.uid,
+                slug: team.slug,
+                abbreviation: team.abbreviation,
+                display_name: team.displayName,
+                short_display_name: team.shortDisplayName,
+                color: team.color,
+                alternate_color: team.alternateColor,
+                is_active: team.isActive,
+                is_all_star: team.isAllStar,
+                logos: team.logos.map((logo: any) => logo.href)
+            } as Team);
+        });
+
     }
 
     /**
@@ -122,8 +230,8 @@ export class DataService {
             const teamId = parseInt(team.team.id);
 
             const boxscoreObj: Boxscore = {
-                eventId: eventId,
-                teamId: teamId
+                event_id: eventId,
+                team_id: teamId
             }
 
             DataService.parseTeamStatistics(statistics, boxscoreObj);
@@ -152,10 +260,11 @@ export class DataService {
      */
     private static parsePlayerStatistics(player: any, boxscore: Boxscore) {
         const mappedStats = DataService.flattenPlayerStatArrays(player.statistics);
-        console.info(`Mapped stats: `, mappedStats);
+        //@ts-ignore
+        // if (!mappedStats.kickReturns) console.log(`No kick stats for event ${boxscore.eventId} `, mappedStats);
         for (const key in mappedStats) {
             if (key in DataService.playerStatsMap) {
-                console.log(`Parsing ${key} with value ${mappedStats[key]}`);
+                // console.log(`Parsing ${key} with value ${mappedStats[key]}`);
                 DataService.playerStatsMap[key](mappedStats[key], boxscore);
             }
         }
@@ -172,23 +281,29 @@ export class DataService {
         [statName]: statValue,
          ...
       }
+
+     // [ [ 1, 2 ], [ 3, 4] ] => [ 1, 2, 3, 4 ]
      */
     private static flattenPlayerStatArrays(statistics: Array<any>): Object {
         return statistics
             .flatMap((statistic) => {
-                console.log(`Statistic: `, statistic);
                 return statistic.keys
                     .map((key, index) => {
-                        if (statistic.totals.length == 0) return;
+                        if (!statistic.totals || statistic.totals.length == 0) return undefined;
+                        if (statistic.totals.length !== statistic.keys.length && statistic.keys.length > 0) {
+                            //sometimes the totals array is missing a value for adjQBR so we insert a dummy element here
+                            statistic.totals.splice(6, 0, "");
+                        }
+
                         return {
-                            key: key,
+                            key: key.replace(/[/\-]/, "Over"), //replace slashes or dashes in stat names
                             value: statistic.totals[index]
                         }
                     });
             })
             .filter((stat) => stat != undefined)
             .reduce((boxscore, stat) => {
-                return (boxscore[stat.key] = stat.value, boxscore);
+                return (boxscore[stat.key] = stat.value, boxscore); // weird comma expression makes this more efficient
             }, {});
     }
 
@@ -218,50 +333,50 @@ export class DataService {
      * @param boxscore the boxscore object to which we want to assign the corresponding value
      */
     private static teamStatsMap: Record<string, (value: string, boxscore: Boxscore) => void> = {
-        firstDowns: (value, boxscore) => boxscore.firstDowns = parseInt(value),
-        firstDownsPassing: (value, boxscore) => boxscore.firstDownsPassing = parseInt(value),
-        firstDownsRushing: (value, boxscore) => boxscore.firstDownsRushing = parseInt(value),
-        firstDownsPenalty: (value, boxscore) => boxscore.firstDownsPenalty = parseInt(value),
+        firstDowns: (value, boxscore) => boxscore.first_downs = parseInt(value),
+        firstDownsPassing: (value, boxscore) => boxscore.first_downs_passing = parseInt(value),
+        firstDownsRushing: (value, boxscore) => boxscore.first_downs_rushing = parseInt(value),
+        firstDownsPenalty: (value, boxscore) => boxscore.first_downs_penalty = parseInt(value),
         thirdDownEff: (value, boxscore) => {
             const [conversions, attempts] = value.split("-");
-            boxscore.thirdDownConversions = parseInt(conversions);
-            boxscore.thirdDownAttempts = parseInt(attempts);
+            boxscore.third_down_conversions = parseInt(conversions);
+            boxscore.third_down_attempts = parseInt(attempts);
         },
         fourthDownEff: (value, boxscore) => {
             const [conversions, attempts] = value.split("-");
-            boxscore.fourthDownConversions = parseInt(conversions);
-            boxscore.fourthDownAttempts = parseInt(attempts);
+            boxscore.fourth_down_conversions = parseInt(conversions);
+            boxscore.fourth_down_attempts = parseInt(attempts);
         },
-        totalOffensivePlays: (value, boxscore) => boxscore.totalOffensivePlays = parseInt(value),
-        totalYards: (value, boxscore) => boxscore.totalYards = parseInt(value),
-        totalDrives: (value, boxscore) => boxscore.totalDrives = parseInt(value),
-        netPassingYards: (value, boxscore) => boxscore.netPassingYards = parseInt(value),
+        totalOffensivePlays: (value, boxscore) => boxscore.total_offensive_plays = parseInt(value),
+        totalYards: (value, boxscore) => boxscore.total_offensive_yards = parseInt(value),
+        totalDrives: (value, boxscore) => boxscore.total_drives = parseInt(value),
+        netPassingYards: (value, boxscore) => boxscore.net_passing_yards = parseInt(value),
         completionAttempts: (value, boxscore) => {
             const [completions, attempts] = value.split("/");
             boxscore.completions = parseInt(completions);
-            boxscore.completionAttempts = parseInt(attempts);
+            boxscore.completion_attempts = parseInt(attempts);
         },
-        interceptions: (value, boxscore) => boxscore.interceptionsThrown = parseInt(value),
+        interceptions: (value, boxscore) => boxscore.interceptions_thrown = parseInt(value),
         sacksYardsLost: (value, boxscore) => {
             const [sacks, yards] = value.split("-");
-            boxscore.sacksAgainst = parseInt(sacks);
-            boxscore.yardsLost = parseInt(yards);
+            boxscore.sacks_against = parseInt(sacks);
+            boxscore.yards_lost = parseInt(yards);
         },
-        rushingYards: (value, boxscore) => boxscore.rushingYards = parseInt(value),
-        rushingAttempts: (value, boxscore) => boxscore.rushingAttempts = parseInt(value),
+        rushingYards: (value, boxscore) => boxscore.rushing_yards = parseInt(value),
+        rushingAttempts: (value, boxscore) => boxscore.rushing_attempts = parseInt(value),
         redZoneAttempts: (value, boxscore) => {
             const [conversions, attempts] = value.split("-");
-            boxscore.redZoneAttempts = parseInt(attempts);
-            boxscore.redZoneConversions = parseInt(conversions);
+            boxscore.red_zone_attempts = parseInt(attempts);
+            boxscore.red_zone_conversions = parseInt(conversions);
         },
         totalPenaltiesYards: (value, boxscore) => {
             const [penalties, yards] = value.split("-");
             boxscore.penalties = parseInt(penalties);
-            boxscore.penaltyYards = parseInt(yards);
+            boxscore.penalty_yards = parseInt(yards);
         },
         turnovers: (value, boxscore) => boxscore.turnovers = parseInt(value),
-        fumblesLost: (value, boxscore) => boxscore.fumblesLost = parseInt(value),
-        defensiveTouchdowns: (value, boxscore) => boxscore.defensiveTouchdowns = parseInt(value)
+        fumblesLost: (value, boxscore) => boxscore.fumbles_lost = parseInt(value),
+        defensiveTouchdowns: (value, boxscore) => boxscore.defensive_touchdowns = parseInt(value)
     }
 
     /**
@@ -273,26 +388,26 @@ export class DataService {
      * @param boxscore the boxscore object to which we want to assign the corresponding value
      */
     private static playerStatsMap: Record<string, (value: string, boxscore: Boxscore) => void> = {
-        passingTouchdowns: (value, boxscore) => boxscore.passingTouchdowns = parseInt(value),
-        rushingTouchdowns: (value, boxscore) => boxscore.rushingTouchdowns = parseInt(value),
-        passerRating: (value, boxscore) => boxscore.passerRating = parseFloat(value),
-        tackles: (value, boxscore) => boxscore.tackles = parseInt(value),
+        passingTouchdowns: (value, boxscore) => boxscore.passing_touchdowns = parseInt(value),
+        rushingTouchdowns: (value, boxscore) => boxscore.rushing_touchdowns = parseInt(value),
+        QBRating: (value, boxscore) => boxscore.passer_rating = parseFloat(value) || null,
+        totalTackles: (value, boxscore) => boxscore.tackles = parseInt(value),
         sacks: (value, boxscore) => boxscore.sacks = parseInt(value),
-        tacklesForLoss: (value, boxscore) => boxscore.tacklesForLoss = parseInt(value),
-        passesDefended: (value, boxscore) => boxscore.passesDefended = parseInt(value),
-        interceptions: (value, boxscore) => boxscore.defensiveInterceptions = parseInt(value),
-        defensiveTouchdowns: (value, boxscore) => boxscore.defensiveTouchdowns = parseInt(value),
-        kickReturns: (value, boxscore) => boxscore.kickReturns = parseInt(value),
-        kickReturnYards: (value, boxscore) => boxscore.kickReturnYards = parseInt(value),
-        puntReturns: (value, boxscore) => boxscore.puntReturns = parseInt(value),
-        puntReturnYards: (value, boxscore) => boxscore.puntReturnYards = parseInt(value),
+        tacklesForLoss: (value, boxscore) => boxscore.tackles_for_loss = parseInt(value),
+        passesDefended: (value, boxscore) => boxscore.passes_defended = parseInt(value),
+        interceptions: (value, boxscore) => boxscore.defensive_interceptions = parseInt(value),
+        defensiveTouchdowns: (value, boxscore) => boxscore.defensive_touchdowns = parseInt(value),
+        kickReturns: (value, boxscore) => boxscore.kick_returns = parseInt(value) || 0,
+        kickReturnYards: (value, boxscore) => boxscore.kick_return_yards = parseInt(value) || 0,
+        puntReturns: (value, boxscore) => boxscore.punt_returns = parseInt(value) || 0,
+        puntReturnYards: (value, boxscore) => boxscore.punt_return_yards = parseInt(value) || 0,
         fieldGoalsMadeOverfieldGoalAttempts: (value, boxscore) => {
             const [made, attempts] = value.split("/");
-            boxscore.fieldGoalsMade = parseInt(made);
-            boxscore.fieldGoalsAttempted = parseInt(attempts);
+            boxscore.field_goals_made = parseInt(made);
+            boxscore.field_goals_attempted = parseInt(attempts);
         },
         punts: (value, boxscore) => boxscore.punts = parseInt(value),
-        puntYards: (value, boxscore) => boxscore.puntYards = parseInt(value)
+        puntYards: (value, boxscore) => boxscore.punt_yards = parseInt(value)
     }
 
     public getBoxScores(): Boxscore[] {
@@ -308,86 +423,7 @@ export class DataService {
         return this.events;
     }
 
-    public async fetchEventData(year: string): Promise<void> {
-        const events = await this.dataClient.getAllEvents(year);
-        // console.log(events);
-        let iterCount = 0;
 
-        for (let event of events) {
-            // console.log("[DEBUG] Iteration: " + iterCount++);
-
-            //ignore all-star games/teams
-            if (!event.competitions[0].competitors[0].team.isActive) {
-                continue;
-            }
-            this.events[this.eventCount++] = ({
-                    id: parseInt(event.id),
-                    uid: event.uid,
-                    date: formatISO9075(event.date), //MySQL doesn't accept ISO8601 dates, which is what ESPN API uses
-                    shortName: event.shortName,
-                    season: {
-                        year: event.season.year,
-                        type: event.season.type
-                    },
-                    status: parseEventStatus(event.status.type.name),
-                    competitions: [
-                        {
-                            id: parseInt(event.competitions[0].id),
-                            uid: event.competitions[0].uid,
-                            date: event.competitions[0].date,
-                            timeValid: !!event.competitions[0].timeValid,
-                            neutralSite: !!event.competitions[0].neutralSite,
-                            conferenceCompetition: !!event.competitions[0].conferenceCompetition,
-                            venue: {id: event.competitions[0].venue?.id},
-                            type: parseInt(event.competitions[0].type.id),
-                            competitors: [
-                                {
-                                    team: this.getTeamByUid(event.competitions[0].competitors[0].team.uid),
-                                    homeAway: !!event.competitions[0].competitors[0].homeAway,
-                                    winner: !!event.competitions[0].competitors[0].winner,
-                                    score: event.competitions[0].competitors[0].score,
-                                    records: [
-                                        {
-                                            type: event.competitions[0].competitors[0].records[0].type,
-                                            summary: event.competitions[0].competitors[0].records[0].summary
-                                        } as TeamRecord,
-                                        {
-                                            type: event.competitions[0].competitors[0].records[1].type,
-                                            summary: event.competitions[0].competitors[0].records[1].summary
-                                        } as TeamRecord,
-                                        {
-                                            type: event.competitions[0].competitors[0].records[2].type,
-                                            summary: event.competitions[0].competitors[0].records[2].summary
-                                        } as TeamRecord
-                                    ]
-                                } as Competitor,
-                                {
-                                    team: this.getTeamByUid(event.competitions[0].competitors[1].team.uid),
-                                    homeAway: !!event.competitions[0].competitors[1].homeAway,
-                                    winner: !!event.competitions[0].competitors[1].winner,
-                                    score: event.competitions[0].competitors[1].score,
-                                    records: [
-                                        {
-                                            type: event.competitions[0].competitors[1].records[0].type,
-                                            summary: event.competitions[0].competitors[1].records[0].summary
-                                        } as TeamRecord,
-                                        {
-                                            type: event.competitions[0].competitors[1].records[1].type,
-                                            summary: event.competitions[0].competitors[1].records[1].summary
-                                        } as TeamRecord,
-                                        {
-                                            type: event.competitions[0].competitors[1].records[2].type,
-                                            summary: event.competitions[0].competitors[1].records[2].summary
-                                        } as TeamRecord
-                                    ]
-                                } as Competitor
-                            ]
-                        } as Competition
-                    ]
-                } as NFLEvent
-            );
-        }
-    }
 
 
     public getTeamByUid(uid: string): Team {

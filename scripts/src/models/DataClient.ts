@@ -2,7 +2,7 @@
 
 export interface DataClient {
 
-    getAllEvents(year: string): Promise<any>;
+    getPastEvents(yearsBack: number): Promise<any>;
     getAllTeams(): Promise<any>;
     getAllBoxScores(eventIds: number[]): Promise<Array<any>>;
 }

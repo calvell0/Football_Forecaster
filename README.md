@@ -19,8 +19,11 @@ MYSQL_PASSWORD=<your_mysql_password>
 MYSQL_HOST=localhost
 MYSQL_PORT=3306
 API_BASE_URL=https://site.api.espn.com/apis/site/v2/sports/football/nfl/
+BOXSCORE_REQ_DELAY_LEVEL=1
 ```
-5. Open a terminal in the `./scripts` directory and run `npm run compile_and_run` to compile the TypeScript files, run the
+BOXSCORE_REQ_DELAY_LEVEL can be any integer between 0 and 3. Adjust this if requests to ESPN's API are being throttled. The higher the number, the longer the delay between requests.
+
+5. Open a terminal in the `./scripts` directory and run `npm run build` to compile the TypeScript files, run the
 script to initialize the database, and populate it with data from ESPN
 6. Navigate back to the root directory of the project
 7. Ensure that you have Java installed. Verify this by running `java -version` in your terminal.

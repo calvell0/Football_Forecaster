@@ -8,10 +8,11 @@ const testDataDir = "file://scripts/src/tests/test_data";
 export class MockDataClient implements DataClient {
 
 
-    async getAllEvents(): Promise<any> {
+    async getPastEvents(yearsBack: number): Promise<any> {
 
 
         // console.log(teams);
+        console.log("[MOCKDATACLIENT] Events.length: ", events.events.length);
         return events.events;
     }
 
