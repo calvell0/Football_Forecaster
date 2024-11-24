@@ -1,20 +1,39 @@
 import {DataClient} from "../models/DataClient.js";
-import {Team, TeamResponseObject} from "../models/models.js";
-import teamData from "./test_data/teams.json";
-import eventData from "./test_data/events.json";
+import boxscore from "./test_data/boxscore.json" assert {type: "json"};
+import events from "./test_data/events.json" assert {type: "json"};
+import teams from "./test_data/teams.json" assert {type: "json"};
 
+const testDataDir = "file://scripts/src/tests/test_data";
 
 export class MockDataClient implements DataClient {
-    async getAllEvents(): Promise<any> {
-        return eventData.events;
+
+
+    async getPastEvents(yearsBack: number): Promise<any> {
+
+
+        // console.log(teams);
+        console.log("[MOCKDATACLIENT] Events.length: ", events.events.length);
+        return events.events;
     }
 
     async getAllTeams(): Promise<any> {
-        // const teams: Team[] =[];
-        // teamData.sports[0].leagues[0].teams.forEach((team) => {
-        //     teams.push(team.team);
-        // });
-        // return teams;
+        const newTeamArr = [];
+        teams.sports[0].leagues[0].teams.forEach((team) => {
+            newTeamArr.push(team.team);
+        });
+
+        return newTeamArr;
     }
+
+    async getAllBoxScores(eventIds: number[]): Promise<Array<any>> {
+
+
+            // @ts-ignore
+        boxscore.gamepackageJSON.boxscore.eventId = boxscore.gameId;
+            const newBoxScore = [boxscore.gamepackageJSON.boxscore];
+
+        return newBoxScore;
+    }
+
 
 }
