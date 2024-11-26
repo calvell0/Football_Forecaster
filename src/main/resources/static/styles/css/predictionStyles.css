@@ -1,0 +1,110 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Frei', sans-serif;
+}
+
+@font-face {
+    font-family: 'Frei';
+    src: url('../fonts/FreiburgInLinePersonalUse-R9KWe.otf') format('truetype');
+    font-weight: normal;
+    font-style: normal;
+}
+
+
+body {
+    font-family: 'Arial', sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #1A1A1A;
+    color: #FFF;
+}
+
+h1 {
+    font-size: 3.5rem;
+    color: #32CD32;
+    text-align: center;
+    margin-top: 50px;
+    text-shadow: 2px 2px 10px rgba(0, 0, 0, 0.8);
+    letter-spacing: 3px;
+}
+
+.container {
+    display: flex;
+    justify-content: space-between;
+    margin: 40px;
+}
+
+.team-section {
+    width: 45%;
+    padding: 20px;
+    border-radius: 15px;
+    box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.3);
+    text-align: center;
+    position: relative;
+    transition: background-color 0.3s ease;
+}
+
+.vs-section {
+    text-align: center;
+    font-size: 2rem;
+    margin-top: 150px;
+    color: #FFF;
+    font-weight: bold;
+}
+
+.team-info h2 {
+    font-size: 2rem;
+    color: #FFF;
+    margin-bottom: 10px;
+}
+
+.team-info img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 10px;
+    transition: transform 0.3s ease;
+}
+
+.team-info img:hover {
+    transform: scale(1.1);
+}
+
+.prediction {
+    text-align: center;
+    margin-top: 50px;
+    font-size: 1.5rem;
+}
+
+.prediction h3 {
+    font-size: 1.8rem;
+    color: #32CD32;
+    font-weight: bold;
+}
+
+.confidence-level {
+    font-size: 1.2rem;
+    color: #FF6347;
+}
+
+
+
+/* Media queries for responsiveness */
+@media (max-width: 768px) {
+    .container {
+        flex-direction: column;
+        align-items: center;
+        margin: 20px;
+    }
+
+    .team-section {
+        width: 80%;
+        margin-bottom: 20px;
+    }
+
+    .vs-section {
+        font-size: 1.5rem;
+        margin-top: 100px;
+    }
+}

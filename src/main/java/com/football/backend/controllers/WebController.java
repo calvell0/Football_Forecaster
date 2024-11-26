@@ -53,15 +53,32 @@ public class WebController {
 
 
     @GetMapping("/prediction")
-    public String matchupPrediction(@RequestParam(name="home") int homeId, @RequestParam(name="away") int awayId, Model model) {
-        Team home = this.teamRepository.findById(homeId);
-        Team away = this.teamRepository.findById(awayId);
+    public String matchupPrediction(@RequestParam(name = "home") int homeId,
+                                    @RequestParam(name = "away") int awayId,
+                                    Model model) {
+        Team home = teamRepository.findById(homeId);
+        Team away = teamRepository.findById(awayId);
+
         Logo homeLogo = logoRepository.findOneByTeamId(homeId);
         Logo awayLogo = logoRepository.findOneByTeamId(awayId);
+        String homeColor = home.getColor();
+        String awayColor = away.getColor();
+
+        // Access href field directly
+        String homeLogoUrl = (homeLogo != null && homeLogo.getHref() != null)
+                ? homeLogo.getHref()
+                : "/images/default-home-logo.png";
+
+        String awayLogoUrl = (awayLogo != null && awayLogo.getHref() != null)
+                ? awayLogo.getHref()
+                : "/images/default-away-logo.png";
+
         model.addAttribute("homeTeam", home);
         model.addAttribute("awayTeam", away);
-        model.addAttribute("homeLogo", homeLogo);
-        model.addAttribute("awayLogo", awayLogo);
+        model.addAttribute("homeLogoUrl", homeLogoUrl);
+        model.addAttribute("awayLogoUrl", awayLogoUrl);
+        model.addAttribute("homeTeamColor", homeColor);
+        model.addAttribute("awayTeamColor", awayColor);
         model.addAttribute("prediction", new PlaceholderPrediction(true, 0.5));
 
         return "prediction";

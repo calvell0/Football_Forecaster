@@ -2,25 +2,57 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>NFL Matchup Prediction</title>
-    <link rel="stylesheet" type="text/css" th:href="@{/styles/predictionStyles.css}">
+    <link rel="stylesheet" type="text/css" th:href="@{/styles/css/predictionStyles.css}">
+
 </head>
 <body>
 <h1>NFL Matchup Prediction</h1>
 
-<div class="team">
-    <h2 id="team1-name" th:text="${homeTeam.getDisplayName()}"></h2>
-    <img id="team1-logo" src="" alt="Team 1 Logo">
+<div class="container">
+    <div id="homeTeamSection" class="team-section">
+        <div class="team-info">
+            <h2 id="team1-name" th:text="${homeTeam.getDisplayName()}"></h2>
+            <img id="team1-logo" th:src="${homeLogoUrl}" alt="Home Team Logo">
+        </div>
+    </div>
+
+    <div class="vs-section">
+        <h2>VS</h2>
+    </div>
+
+    <div id="awayTeamSection" class="team-section">
+        <div class="team-info">
+            <h2 id="team2-name" th:text="${awayTeam.getDisplayName()}"></h2>
+            <img id="team2-logo" th:src="${awayLogoUrl}" alt="Away Team Logo">
+        </div>
+    </div>
 </div>
 
-<h2>vs</h2>
-
-<div class="team">
-    <h2 id="team2-name" th:text="${awayTeam.getDisplayName()}"></h2>
-    <img id="team2-logo" src="" alt="Team 2 Logo">
+<div class="prediction">
+    <h3>Predicted Outcome:
+        <span id="predicted-outcome" th:text="${(prediction.getOutcome()) ? homeTeam.getDisplayName() : awayTeam.getDisplayName()}">
+                are predicted to win
+            </span>
+    </h3>
+    <h3>Confidence Level:
+        <span id="confidence-level" th:text="${prediction.getConfidence()}"></span>
+    </h3>
 </div>
 
-<h3>Predicted Outcome: <span id="predicted-outcome" th:text="${(prediction.getOutcome()) ? homeTeam.getDisplayName() : awayTeam.getDisplayName()}"> are predicted to win</span></h3>
-<h3>Confidence Level: <span id="confidence-level" th:text="${prediction.getConfidence()}"></span></h3>
+<script th:inline="javascript">
+    // Dynamically set the background colors for home and away teams
+    var homeTeamColor = /*[[${homeTeamColor}]]*/ '#32CD32';  // Fallback to green if null
+    var awayTeamColor = /*[[${awayTeamColor}]]*/ '#FF6347';  // Fallback to red if null
+
+    // Set the background colors for the home and away team sections
+    document.getElementById('homeTeamSection').style.backgroundColor = "#" + homeTeamColor;
+    document.getElementById('awayTeamSection').style.backgroundColor = "#" + awayTeamColor;
+
+    // Display team colors in the console
+    console.log("Home Team Color: " + homeTeamColor);
+    console.log("Away Team Color: " + awayTeamColor);
+</script>
 </body>
 </html>

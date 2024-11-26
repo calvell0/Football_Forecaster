@@ -1,12 +1,14 @@
+
+
 * {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
-    font-family: 'Poppins', sans-serif;
+
 }
 
 body {
-    background: url('football-field.jpg') no-repeat center center fixed;
+    background: url('../file.jpg') no-repeat center center fixed;
     background-size: cover;
     color: #fff;
     display: flex;
@@ -16,24 +18,39 @@ body {
     min-height: 100vh;
 }
 
-header h1 {
-    font-size: 4rem;
-    color: #32CD32;
-    /* Football field green */
-    text-shadow: 2px 2px 15px rgba(0, 0, 0, 0.8);
-    letter-spacing: 3px;
-    text-align: center;
-    margin-bottom: 40px;
-    animation: glow 1.5s infinite alternate;
+@font-face {
+    font-family: 'Frei';
+    src: url('../fonts/FreiburgInLinePersonalUse-R9KWe.otf') format('truetype');
+    font-weight: normal;
+    font-style: normal;
 }
+
+header {
+    position: absolute;
+    top: 0px;
+    left: 50%;
+    transform: translateX(-50%);
+    text-align: center;
+    width: 100%;
+    font-family: 'Frei', sans-serif;
+    color: white;
+    text-shadow: 3px 3px 5px rgba(0, 0, 0, 0.7);
+    font-size: 3rem;
+    letter-spacing: 2px;
+    background-color: #003366;
+    padding: 10px 0;
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.6);
+}
+
+
 
 @keyframes glow {
     0% {
-        text-shadow: 2px 2px 10px rgba(50, 205, 50, 0.8);
+        text-shadow: 2px 2px 10px rgba(49, 137, 253, 0.8);
         /* Green glow */
     }
     100% {
-        text-shadow: 2px 2px 20px rgba(50, 205, 50, 1);
+        text-shadow: 2px 2px 20px rgba(49, 137, 253, 0.8);
     }
 }
 
@@ -64,14 +81,14 @@ header h1 {
 }
 .search-bar{
     border-radius: 25px;
-    border: 2px solid #73AD21;
+    border: 2px solid rgba(49, 137, 253, 0.8);
     padding: 10px;
     width: 180px;
     height: 10px;
 }
 
 .dropbtn {
-    background-color: #578d04; /* Button color */
+    background-color: rgba(49, 137, 253, 0.8); /* Button color */
     border: none;
     padding: 5px;
     margin-left: 5px;
@@ -82,16 +99,16 @@ header h1 {
 }
 
 .dropbtn:hover {
-    background-color: #02cd32; /* Darker blue on hover */
+    background-color: rgba(49, 137, 253, 0.8); /* Darker blue on hover */
 }
 
 .dropbtn i {
     margin: 0; /* Remove any margin */
 }
 .findbttn{
-    background-color: #a8e6a3;
+    background-color: rgba(49, 137, 253, 0.8);
     border: none;
-    color: grey;
+    color: black;
     padding: 10px 20px;
     font-size: 16px;
     border-radius: 12px;
@@ -134,8 +151,9 @@ header h1 {
 h2 {
     font-size: 1.8rem;
     margin-bottom: 15px;
-    color: #32CD32;
+    color: #ffffff;
     letter-spacing: 2px;
+    font-family: 'Frei', sans-serif;
 }
 
 .calendar-input {
@@ -144,8 +162,8 @@ h2 {
     max-width: 300px;
     border: none;
     border-radius: 15px;
-    background-color: #32CD32;
-    color: #fff;
+    background-color: rgba(49, 137, 253, 0.8);
+    color: #0000007F;
     font-size: 1rem;
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
     outline: none;
@@ -190,7 +208,7 @@ h2 {
     border-radius: 15px;
     font-size: 1.2rem;
     background-color: #32CD32;
-    color: #fff;
+    color: #0000007F;
     outline: none;
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
     transition: transform 0.2s;
@@ -258,4 +276,52 @@ h2 {
 
 .dropdown-content ul li a:hover {
     background-color: #f1f1f1;
+}
+
+.flatpickr-day.clickable {
+    background-color: #4CAF50; /* Green for clickable days */
+    color: white;
+    cursor: pointer;
+}
+
+.flatpickr-day.unclickable {
+    background-color: #f0f0f0; /* Light gray for unclickable days */
+    color: #ccc;
+    cursor: not-allowed;
+}
+
+/* Game list styles */
+#game-list {
+    margin-top: 20px;
+    display: none; /* Initially hidden */
+}
+
+
+.game-item:hover {
+    background-color: #f0f0f0;
+}
+
+.flatpickr-day.has-games {
+    background-color: #4caf50;  /* Green background */
+    color: white;  /* White text */
+}
+.game-item {
+    padding: 10px;
+    margin: 5px;
+    cursor: pointer;
+    background-color: #333333;
+}
+.game-item:hover {
+    background-color: #ddd;
+}
+.calendar-input::placeholder {
+    color: black;
+    font-weight: bold;
+}
+.calendar-input{
+    color: #0c0c0c;
+}
+
+.container{
+   margin-left: 40px ;
 }
