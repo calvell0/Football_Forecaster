@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Football Forecaster</title>
-    <link rel="stylesheet" th:href="@{/styles/styles.css}">
+    <link rel="stylesheet" th:href="@{/styles/css/styles.css}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/flatpickr/4.6.9/flatpickr.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     <script th:src="@{/scripts/multiselect-dropdown.js}"></script>
@@ -15,70 +15,29 @@
             event.preventDefault(); // Prevent the default button behavior
             const dropdown = document.getElementById(dropdownId);
 
-            // Check the current display style of the dropdown
+
             if (dropdown.style.display === "none" || dropdown.style.display === "") {
-                dropdown.style.display = "block"; // Show the dropdown
+                dropdown.style.display = "block";
             } else {
-                dropdown.style.display = "none"; // Hide the dropdown
+                dropdown.style.display = "none";
             }
         }
 
-        // Populate the teamData object
-        function populateTeamData() {
-            fetch('/teams')
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error('Network response was not ok ' + response.statusText);
-                    }
-                    return response.json();
-                })
-                .then(teamsArray => {
-                    console.log("Teams Array:", teamsArray);
-                    teamsArray.forEach(team => {
-                        teamData[team.id] = team.displayName;
-                    });
-                })
-                .catch(error => {
-                    console.error("There was a problem with the fetch operation:", error);
-                });
-        }
-
-        // Call the function to populate the data
-        populateTeamData();
-
-
-        function fillSearchField(teamId, queryFieldId) {
-            const teamName = teamData[teamId];
-
-            if (teamName) {
-                document.getElementById(queryFieldId).value = teamName;
-            } else {
-                console.error("Team not found for ID: " + teamId);
-            }
-        }
     </script>
 
 </head>
 
 <body>
-<header>
+<header >
     <h1>Football Forecaster</h1>
 </header>
 
 <main>
-    <div class="image-section">
-        <img th:src="@{/styles/images/football image.jpeg}" alt="Football image" class="football-image">
-    </div>
+
 
     <div class="container">
         <div class="search-section">
             <h2>Pick 2 teams</h2>
-           <!-- <select name="teams" id="search" multiple multiselect-search="true">
-                <option th:each="team : ${teams}" th:value="${team.id}" th:text="${team.displayName}"></option>
-            </select>-->
-            <!-- < <a id="prediction-anchor" href="/prediction/">
-                  <button id="get-prediction">Get Prediction</button>
-            </a>-->
         </div>
 
         <div class="dropdown-container">
@@ -135,13 +94,112 @@
         </button>
         <div class="calendar-section">
             <h2>Select Game Date</h2>
-            <input type="text" id="game-date" class="calendar-input" placeholder="Pick a date">
+            <input type="text" id="game-date" class="calendar-input" placeholder="Pick a date" >
         </div>
+        <div id="game-list" style="display: none;"></div>
+
     </div>
 </main>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/flatpickr/4.6.9/flatpickr.min.js"></script>
 <script>
+    let gameData = {}; // Object to store games grouped by date
+
+    function fetchAndPopulateCalendar() {
+        fetch('/events/schedule')
+            .then(response => response.json())
+            .then(games => {
+                console.log("Fetched Games:", games);
+
+                if (Array.isArray(games)) {
+
+                    gameData = {};
+
+
+                    games.forEach(game => {
+                        const gameDate = new Date(game.date);
+
+                        gameDate.setHours(gameDate.getHours() - 5);
+
+
+                        const formattedDate = gameDate.toISOString().split('T')[0];
+
+
+                        const homeTeamId = game.homeTeam.id;
+                        const awayTeamId = game.awayTeam.id;
+
+                        if (!gameData[formattedDate]) {
+                            gameData[formattedDate] = [];
+                        }
+                        gameData[formattedDate].push({
+                            homeTeam: { id: homeTeamId, displayName: game.homeTeam.displayName },
+                            awayTeam: { id: awayTeamId, displayName: game.awayTeam.displayName },
+                            gameDate: gameDate,
+                            gameId: game.id
+                        });
+                    });
+
+                    console.log("Game Data by Date:", gameData);
+
+                    flatpickr("#game-date", {
+                        enableTime: false,
+                        dateFormat: "Y-m-d",
+                        onDayCreate: function(dObj, dStr, fp, dayElem) {
+                            const date = dayElem.dateObj;
+                            const dateString = date.toISOString().split('T')[0];
+
+                            // Highlight days that have games
+                            if (gameData[dateString]) {
+                                dayElem.classList.add("has-games");
+                                dayElem.addEventListener('click', () => {
+                                    showGameDetails(dateString);
+                                });
+                            }
+                        }
+                    });
+                }
+            })
+            .catch(error => {
+                console.error("Error fetching future games:", error);
+            });
+    }
+
+
+    // Show game details for the selected date
+    function showGameDetails(date) {
+        const gameListElement = document.getElementById('game-list');
+        gameListElement.innerHTML = '';
+
+        const gamesForDate = gameData[date];
+
+        if (gamesForDate && gamesForDate.length > 0) {
+            gameListElement.style.display = 'block';
+
+            gamesForDate.forEach(game => {
+                const gameElement = document.createElement('div');
+                gameElement.classList.add('game-item');
+                gameElement.textContent = `${game.awayTeam.displayName} vs ${game.homeTeam.displayName}`;
+
+
+                gameElement.addEventListener('click', () => {
+                    const homeTeamId = game.homeTeam.id;
+                    const awayTeamId = game.awayTeam.id;
+                    window.location.href = `/prediction?home=${homeTeamId}&away=${awayTeamId}`;
+                });
+
+                gameListElement.appendChild(gameElement);
+            });
+        } else {
+            gameListElement.style.display = 'none';
+        }
+    }
+
+
+    document.addEventListener('DOMContentLoaded', fetchAndPopulateCalendar);
+
+
+
+
     function findGameDates() {
         // Get the values from the search bars
         const teamName1 = document.getElementById('query').value;
@@ -162,10 +220,10 @@
 
         // First fetch attempt with initial homeTeamId and awayTeamId
         fetch(`/events?homeId=${teamId1}&awayId=${teamId2}`)
-            .then(async response => { //here we are packaging the response into an object so that the status code can be passed with the data
+            .then(async response => {
                return {
                     status: response.status,
-                    data: await response.json() //force the function to wait for .json() to finish
+                    data: await response.json()
                 }
             })
             .then(response => {
@@ -202,9 +260,6 @@
         dateFormat: "Y-m-d",
     });
 
-    const teamData = {}; // Global variable to store team data
-
-
 
 
 
@@ -222,12 +277,7 @@
     });
 
 
-    // Function to toggle dropdown visibility
-    function dropFunction(event, dropdownId) {
-        event.preventDefault(); // Prevent the default button behavior
-        const dropdown = document.getElementById(dropdownId);
-        dropdown.style.display = dropdown.style.display === "block" ? "none" : "block";
-    }
+
 
 
 </script>
