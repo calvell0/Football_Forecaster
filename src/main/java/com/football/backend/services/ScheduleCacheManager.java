@@ -33,57 +33,56 @@ import java.time.ZoneId;
 
 
 /**
- * Class that holds a cache of scheduled events in memory, and updates the cache when necessary
- *
+ * Class that holds a cache of scheduled events in memory, and updates the cache when
+ * the cache is out-of-date. Use this to access scheduled nfl events.
  */
 @Component
 public class ScheduleCacheManager {
 
     private static final Logger log = LoggerFactory.getLogger(ScheduleCacheManager.class);
 
-    private final NFLEventRepository nflEventRepo;
     private final DataService dataService;
     private final ScheduleCache cache;
 
 
     @Autowired
-    public ScheduleCacheManager(NFLEventRepository eventRepo, DataService dataService, ScheduleCache cache) {
+    public ScheduleCacheManager(DataService dataService, ScheduleCache cache) {
         this.cache = cache;
         this.dataService = dataService;
-        this.nflEventRepo = eventRepo;
 
     }
 
-    public void initCache(){
-        if (this.cache.isStale() || this.cache.getScheduledEvents() == null){
+    /**
+     * initializes the cache data if it doesn't exist or is out-of-date
+     */
+    public void initCache() {
+        if (this.cache.isStale() || this.cache.getScheduledEvents() == null) {
             this.updateCache();
         }
     }
 
 
-    public List<NFLEvent> getScheduledEvents(){
-        if (this.cache.isStale()){
+    public List<NFLEvent> getScheduledEvents() {
+        if (this.cache.isStale()) {
             log.info("Cache miss. Refreshing cache");
             log.info("Calling async method");
             this.updateCache();
             log.info("continuing execution of main thread");
         } else log.info("Cache hit");
 
-        var scheduledEvents = this.cache.getScheduledEvents();
 
-
-        return scheduledEvents;
+        return this.cache.getScheduledEvents();
     }
 
 
     @Async
-    public synchronized void updateCache(){
+    public synchronized void updateCache() {
         this.dataService.updateData();
         ZonedDateTime now = ZonedDateTime.now();
 
         var scheduledEvents = this.dataService.getMappedEvents()
                 .stream()
-                .filter(event -> eventDateIsAfterNow( event,  now))
+                .filter(event -> eventDateIsAfterNow(event, now))
                 .toList();
         this.cache.setCache(scheduledEvents);
 

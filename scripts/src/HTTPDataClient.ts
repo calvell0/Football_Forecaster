@@ -13,7 +13,10 @@ const getDelayLevel = (): DelayLevel => {
     if (delayLevel >= 0 && delayLevel <= 3 && Number.isInteger(delayLevel)) {
         return delayLevel as DelayLevel;
     }
-    else throw new Error(`Invalid delay level: ${delayLevel}. Must be an integer between 0 and 3.`);
+    else {
+        console.warn("[WARN] Invalid BOXSCORE_REQ_DELAY_LEVEL specified. Defaulting to 1.");
+        return 1;
+    }
 }
 
 const delayLevel: DelayLevel = getDelayLevel();

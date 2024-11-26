@@ -4,6 +4,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
 
+/**
+ * Initializes the cache of scheduled events at startup
+ */
 @Component
 public class ScheduleInitializer implements CommandLineRunner {
 
