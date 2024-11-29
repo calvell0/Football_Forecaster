@@ -1,8 +1,10 @@
 package com.football.backend.controllers;
 
+import ai.onnxruntime.OrtException;
 import com.football.backend.models.NFLEvent;
 import com.football.backend.repositories.TeamRepository;
 import com.football.backend.models.Team;
+import com.football.backend.services.ModelForecast;
 import com.football.backend.services.ScheduleCacheManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -67,5 +69,11 @@ public class RESTController {
     public List<NFLEvent> getEvents(){
         LOG.info("GET /schedule");
         return cacheManager.getScheduledEvents();
+    }
+
+    @GetMapping("/matchup/forecast")
+    public void getPrediction() throws OrtException {
+        LOG.info("__dirname:{}", System.getProperty("user.dir"));
+        ModelForecast.get(new float[]{1f});
     }
 }
