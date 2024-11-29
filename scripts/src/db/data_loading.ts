@@ -241,9 +241,11 @@ export const getTeams = async (): Promise<Team[]> => {
 export const export_training_data = async (output_path: string) => {
 
     const host = await connect();
-    const [rows]: [any[], mysql.FieldPacket[]] = await host.execute('SELECT * FROM competitoreventstats');
+    const [rows, fields]: [any[], mysql.FieldPacket[]] = await host.execute('SELECT * FROM competitoreventstats');
 
-    const csvData = rows.map((row) =>
+    const columnNames = fields.map(field => field.name).join(',');
+
+    let csvData = rows.map((row) =>
         Object.values(row).map(value => {
             if (Buffer.isBuffer(value)) {
                 //boolean values in mysql are stored as a 2-bit buffer. Here we convert that buffer to a 1 or 0
@@ -252,6 +254,8 @@ export const export_training_data = async (output_path: string) => {
             return typeof value === 'boolean' ? (value ? 1 : 0) : value;
         }).join(',')
     ).join('\n');
+
+    csvData = `${columnNames}\n${csvData}`;
     fs.writeFileSync(output_path, csvData);
     console.log(`Export complete. Data saved to ${output_path}`);
     await host.end();
