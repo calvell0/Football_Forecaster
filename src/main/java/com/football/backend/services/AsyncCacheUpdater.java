@@ -27,7 +27,7 @@ public class AsyncCacheUpdater {
     }
 
     /**
-     * Asynchronously updates the cache of scheduled events
+     * Asynchronously updates the cache of scheduled events.
      * @param latch CountDownLatch to block other threads from accessing the cache while it is being initialized
      */
     @Async

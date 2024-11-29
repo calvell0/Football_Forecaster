@@ -34,3 +34,5 @@ build/
 
 ### VS Code ###
 .vscode/
+
+model/training_data/training_data.csv

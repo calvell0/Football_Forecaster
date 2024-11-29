@@ -2,6 +2,7 @@ import {connect} from './initialize_database.js';
 import {Boxscore, BoxscoreEventJoin, Competitor, NFLEvent, PartialEvent, SeasonStats, Team} from "../models/models.js";
 import mysql from 'mysql2';
 import {parseRecords} from "../utils/dataUtils.js";
+import fs from "fs";
 
 
 export const persist_teams = async (teams: Team[]) => {
@@ -85,7 +86,7 @@ export const persist_events = async (eventsList: NFLEvent[]) => {
             [ //mysql accepts batch inserts as a double-nested array
                 competitors.map(competitor => {
 
-                        const [hWins, hLosses, aWins, aLosses, ...rest] = parseRecords(competitor.records);
+                        const [oWins, oLosses, hWins, hLosses, aWins, aLosses] = parseRecords(competitor.records);
                         return [
                             competitor.teamId, competitor.event_id, competitor.winner, hWins, hLosses, aWins, aLosses
                         ]
@@ -235,5 +236,25 @@ export const getTeams = async (): Promise<Team[]> => {
 
     await host.end();
     return results as Team[];
+}
+
+export const export_training_data = async (output_path: string) => {
+
+    const host = await connect();
+    const [rows]: [any[], mysql.FieldPacket[]] = await host.execute('SELECT * FROM competitoreventstats');
+
+    const csvData = rows.map((row) =>
+        Object.values(row).map(value => {
+            if (Buffer.isBuffer(value)) {
+                //boolean values in mysql are stored as a 2-bit buffer. Here we convert that buffer to a 1 or 0
+                return value[0] === 1 ? 1 : 0;
+            }
+            return typeof value === 'boolean' ? (value ? 1 : 0) : value;
+        }).join(',')
+    ).join('\n');
+    fs.writeFileSync(output_path, csvData);
+    console.log(`Export complete. Data saved to ${output_path}`);
+    await host.end();
+    return;
 }
 

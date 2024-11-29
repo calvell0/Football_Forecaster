@@ -7,7 +7,8 @@
     "test_nc": "node dist/tests/index.test.js",
     "test": "tsc && node dist/tests/index.test.js",
     "tsc": "tsc",
-    "build": "tsc && node dist/index.js"
+    "build": "tsc && node dist/index.js",
+    "export": "tsc && node dist/index.js --export"
   },
   "author": "",
   "license": "ISC",

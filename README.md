@@ -25,12 +25,15 @@ BOXSCORE_REQ_DELAY_LEVEL can be any integer between 0 and 3. Adjust this if requ
 The higher the number, the longer the delay between requests. Defaults to 1 if not specified.
 
 5. Open a terminal in the `./scripts` directory and run `npm run build` to compile the TypeScript files, run the
-script to initialize the database, and populate it with data from ESPN
-6. Navigate back to the root directory of the project
-7. Ensure that you have Java installed. Verify this by running `java -version` in your terminal.
-7. Resolve all dependencies for the Spring Boot application by running `./mvnw clean install`
-8. Run the resulting compiled Java application with `./mvnw spring-boot:run` or `java -jar target/football-forecaster-0.0.1-SNAPSHOT.jar`
-9. Use the web application by navigating to http://localhost:8080 in your browser
+script to initialize the database, and populate it with data from ESPN. This script will take a while to run, and you may
+need to retry it if it fails. Sometimes, ESPN throttles requests or fails to respond to some since we are making a large
+amount. If the script fails multiple times, try increasing the BOXSCORE_REQUEST_DELAY_LEVEL in the `.env` file.
+6. Run `npm run export` to export the data from the database to a CSV file. This file will be used to train the machine learning model.
+7. Navigate back to the root directory of the project
+8. Ensure that you have Java installed. Verify this by running `java -version` in your terminal.
+9. Resolve all dependencies for the Spring Boot application by running `./mvnw clean install`
+10. Run the resulting compiled Java application with `./mvnw spring-boot:run` or `java -jar target/football-forecaster-0.0.1-SNAPSHOT.jar`
+11. Use the web application by navigating to http://localhost:8080 in your browser
 
 
 
