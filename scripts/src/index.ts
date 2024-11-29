@@ -3,7 +3,12 @@ import {HttpDataClient} from "./HTTPDataClient.js";
 import {initialize_database} from "./db/initialize_database.js";
 import dotenv from 'dotenv';
 import {calculateSeasonStats} from "./services/SeasonStatService.js";
-import {persist_seasonstats} from "./db/data_loading.js";
+import {export_training_data, persist_seasonstats} from "./db/data_loading.js";
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+//get current directory so that we can have mysql save data to our project directory
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 //load .env variables into process.env
 dotenv.config({
@@ -17,6 +22,14 @@ let preserveDB = false;
 if (args.includes("--preserve-db")){ //if --preserve-db is passed, don't drop and recreate the database
     preserveDB = true;
 }
+if (args.includes("--export")){
+    const output_path = path.resolve(__dirname, "../../model/training_data/training_data.csv");
+    console.log(`Exporting training data to ${output_path}...`);
+    await export_training_data(output_path);
+    console.log("Export complete");
+    process.exit(0);
+}
+
 
 
 await initialize_database(preserveDB);
