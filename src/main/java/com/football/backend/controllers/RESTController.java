@@ -2,18 +2,22 @@ package com.football.backend.controllers;
 
 import ai.onnxruntime.OrtException;
 import com.football.backend.models.NFLEvent;
+import com.football.backend.models.OutcomeForecast;
 import com.football.backend.repositories.TeamRepository;
 import com.football.backend.models.Team;
+import com.football.backend.services.DataService;
 import com.football.backend.services.ModelForecast;
 import com.football.backend.services.ScheduleCacheManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.configurationprocessor.json.JSONException;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.IOException;
 import java.util.*;
 
 @RestController
@@ -22,11 +26,13 @@ public class RESTController {
     private final Logger LOG = LoggerFactory.getLogger(RESTController.class);
     private final TeamRepository teamRepository;
     private final ScheduleCacheManager cacheManager;
+    private final DataService dataService;
 
     @Autowired
-    public RESTController(TeamRepository teamRepository, ScheduleCacheManager cacheManager) {
+    public RESTController(TeamRepository teamRepository, ScheduleCacheManager cacheManager, DataService dataService) {
         this.teamRepository = teamRepository;
         this.cacheManager = cacheManager;
+        this.dataService = dataService;
     }
 
     /**
@@ -72,8 +78,18 @@ public class RESTController {
     }
 
     @GetMapping("/matchup/forecast")
-    public void getPrediction() throws OrtException {
-        LOG.info("__dirname:{}", System.getProperty("user.dir"));
-        ModelForecast.get(new float[]{1f});
+    public OutcomeForecast getPrediction(@RequestParam("homeId") int homeId, @RequestParam("awayId") int awayId) throws OrtException {
+        LOG.info("getPrediction called with homeId: {} and awayId: {}", homeId, awayId);
+        String homeTeam = teamRepository.findById(homeId).getDisplayName();
+        String awayTeam = teamRepository.findById(awayId).getDisplayName();
+        LOG.info("Predicting outcome for {} vs {}", homeTeam, awayTeam);
+        try {
+            var modelInput = ModelForecast.prepareModelInput(this.dataService.fetchTeamStatistics(homeId, awayId));
+            return ModelForecast.getPrediction(modelInput);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        } catch (JSONException e) {
+            throw new RuntimeException(e);
+        }
     }
 }

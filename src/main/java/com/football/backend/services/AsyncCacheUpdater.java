@@ -33,7 +33,7 @@ public class AsyncCacheUpdater {
     @Async
     public void updateCache(CountDownLatch latch) {
         try {
-            dataService.updateData();
+            dataService.updateScheduleData();
             ZonedDateTime now = ZonedDateTime.now();
 
             var scheduledEvents = dataService.getMappedEvents()
