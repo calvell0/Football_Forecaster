@@ -1,7 +1,6 @@
 package com.football.backend.services;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
 import com.football.backend.models.*;
 import com.football.backend.repositories.CompetitorRepository;
 import com.football.backend.repositories.NFLEventRepository;
@@ -12,10 +11,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 
-import java.time.LocalDateTime;
-import java.time.ZonedDateTime;
-import java.time.format.DateTimeFormatter;
-import java.time.format.DateTimeFormatterBuilder;
 import java.util.*;
 
 /**
@@ -56,7 +51,7 @@ public class DataService {
         return mappedCompetitors;
     }
 
-    public void updateData(){
+    public void updateScheduleData(){
         try {
             ResponseEntity<String> response = apiService.getNFLEventData();
             List<NFLEvent> newMappedEvents = new ArrayList<>(ESTIMATED_NUM_OF_EVENTS);
@@ -70,13 +65,25 @@ public class DataService {
         }
     }
 
+    public CompetitorStats[] fetchTeamStatistics(int homeId, int awayId){
+        CompetitorStats[] competitorStats = new CompetitorStats[]{
+                new CompetitorStats(),
+                new CompetitorStats()
+        };
 
+        try {
+            ResponseEntity<String> homeStatsResponse = apiService.getTeamStats(homeId);
+            ResponseEntity<String> awayStatsResponse = apiService.getTeamStats(awayId);
+            ResponseEntity<String> homeRecordsResponse = apiService.getTeamRecords(homeId);
+            ResponseEntity<String> awayRecordsResponse = apiService.getTeamRecords(awayId);
 
-
-
-
-
-
+            this.jsonObjectMapper.parseTeamStatsAndRecords(homeStatsResponse, awayStatsResponse, homeRecordsResponse, awayRecordsResponse, competitorStats);
+            log.info("Team statistics parsed and loaded into memory");
+        } catch (JsonProcessingException e) {
+            log.error("Error parsing JSON response: {}", e.getMessage());
+        }
+        return competitorStats;
+    }
 
 
 }

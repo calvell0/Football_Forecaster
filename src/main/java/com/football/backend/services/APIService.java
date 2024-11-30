@@ -30,7 +30,12 @@ public class APIService {
     }
 
     public ResponseEntity<String> getTeamStats(int teamId) {
-        String url = API_BASE_URL + "seasons/2024/types/2/teams/" + teamId + "/statistics";
+        String url ="https://sports.core.api.espn.com/v2/sports/football/leagues/nfl/seasons/2024/types/2/teams/"+ teamId + "/statistics";
+        return restTemplate.getForEntity(url, String.class);
+    }
+
+    public ResponseEntity<String> getTeamRecords(int teamId){
+        String url = "http://sports.core.api.espn.com/v2/sports/football/leagues/nfl/seasons/2024/types/2/teams/" + teamId + "/record?lang=en&region=us";
         return restTemplate.getForEntity(url, String.class);
     }
 

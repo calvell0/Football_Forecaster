@@ -97,24 +97,24 @@ document.addEventListener('DOMContentLoaded', fetchAndPopulateCalendar);
 
 function findGameDates() {
     // Get the values from the search bars
-    const teamName1 = document.getElementById('query').value;
-    const teamName2 = document.getElementById('query2').value;
-    const teamId1 = document.getElementById('query').getAttribute('data-id');
-    const teamId2 = document.getElementById('query2').getAttribute('data-id');
-    const team1Ab = document.getElementById('query').getAttribute('short');
-    const team2Ab = document.getElementById('query2').getAttribute('short');
+    const awayName = document.getElementById('query').value;
+    const homeName = document.getElementById('query2').value;
+    const awayId = document.getElementById('query').getAttribute('data-id');
+    const homeId = document.getElementById('query2').getAttribute('data-id');
+    const awayAbbrv = document.getElementById('query').getAttribute('short');
+    const homeAbbrv = document.getElementById('query2').getAttribute('short');
     let shortName = "";
 
-    if (teamName1 && teamName2) {
-        shortName = team1Ab + " @ " + team2Ab;
+    if (awayName && homeName) {
+        shortName = awayAbbrv + " @ " + homeAbbrv;
     }
 
-    console.log("Team 1 Name: " + teamName1 + " team1 id: " + teamId1 + " abv: " + team1Ab);
-    console.log("Team 2 Name: " + teamName2 + " team2 id: " + teamId2 + " abv: " + team2Ab);
+    console.log("Team 1 Name: " + awayName + " team1 id: " + awayId + " abv: " + awayAbbrv);
+    console.log("Team 2 Name: " + homeName + " team2 id: " + homeId + " abv: " + homeAbbrv);
     console.log(shortName);
 
     // First fetch attempt with initial homeTeamId and awayTeamId
-    fetch(`/events?homeId=${teamId1}&awayId=${teamId2}`)
+    fetch(`/events?homeId=${homeId}&awayId=${awayId}`)
         .then(async response => {
             return {
                 status: response.status,
@@ -130,8 +130,7 @@ function findGameDates() {
                 const gameDate = response.data[0].date;
                 const calendarInput = document.getElementById('game-date');
                 calendarInput.value = gameDate;
-                const homeTeamId = teamId1;
-                const awayTeamId = teamId2;
+
 
                 // Reinitialize Flatpickr to make sure it's set to the selected date
                 flatpickr("#game-date", {
@@ -140,7 +139,7 @@ function findGameDates() {
                     dateFormat: "Y-m-d",
                     onChange: function(selectedDates, dateStr, instance) {
                         // Navigate to prediction.html with the selected date as a query parameter
-                        window.location.href = `/prediction?home=${homeTeamId}&away=${awayTeamId}`;
+                        window.location.href = `/prediction?home=${homeId}&away=${awayId}`;
                     }
                 });
             }
