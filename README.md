@@ -29,11 +29,12 @@ script to initialize the database, and populate it with data from ESPN. This scr
 need to retry it if it fails. Sometimes, ESPN throttles requests or fails to respond to some since we are making a large
 amount. If the script fails multiple times, try increasing the BOXSCORE_REQUEST_DELAY_LEVEL in the `.env` file.
 6. Run `npm run export` to export the data from the database to a CSV file. This file will be used to train the machine learning model.
-7. Navigate back to the root directory of the project
-8. Ensure that you have Java installed. Verify this by running `java -version` in your terminal.
-9. Resolve all dependencies for the Spring Boot application by running `./mvnw clean install`
-10. Run the resulting compiled Java application with `./mvnw spring-boot:run` or `java -jar target/football-forecaster-0.0.1-SNAPSHOT.jar`
-11. Use the web application by navigating to http://localhost:8080 in your browser
+8. Navigate to `Football_Forecaster/model` directory and run `py test_model.py`
+9. Navigate back to the root directory of the project
+10. Ensure that you have Java installed. Verify this by running `java -version` in your terminal.
+11. Resolve all dependencies for the Spring Boot application by running `./mvnw clean install`
+12. Run the resulting compiled Java application with `./mvnw spring-boot:run` or `java -jar target/football-forecaster-0.0.1-SNAPSHOT.jar`
+13. Use the web application by navigating to http://localhost:8080 in your browser
 
 
 
