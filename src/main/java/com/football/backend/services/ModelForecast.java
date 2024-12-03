@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -20,10 +21,25 @@ import java.util.Map;
 @Service
 public class ModelForecast {
 
+    static JSONObject scalerParams;
+    static float[] means;
+    static float[] scales;
+
+    static {
+        try {
+            scalerParams = new JSONObject(new String(Files.readAllBytes(Paths.get("src/main/resources/lr_model/scaler_params.json"))));
+            means = jsonArrayToFloatArray(scalerParams.getJSONArray("mean"));
+            scales = jsonArrayToFloatArray(scalerParams.getJSONArray("scale"));
+        } catch (IOException | JSONException e) {
+            throw new RuntimeException("Error reading scaler params: " + e.getMessage());
+        }
+    }
+
     public static OutcomeForecast getPrediction(float[] input) throws OrtException {
         try (OrtEnvironment env = OrtEnvironment.getEnvironment();
              OrtSession session = env.createSession("src/main/resources/lr_model/model.onnx", new OrtSession.SessionOptions())) {
 
+            System.out.println("Input Vector: " + Arrays.toString(input));
             FloatBuffer inputBuffer = FloatBuffer.wrap(input);
             OnnxTensor tensor = OnnxTensor.createTensor(env, inputBuffer, new long[]{1, input.length});
             try (var result = session.run(Collections.singletonMap("float_input", tensor))) {
@@ -32,7 +48,7 @@ public class ModelForecast {
 
                 //Wow this library is annoying
                 var probs = (List<?>)result.get("output_probability").get().getValue();
-                var probsMap = (Map<Long, Float>) ((OnnxMap)probs.get(0)).getValue();
+                Map<Long, Float> probsMap = (Map<Long, Float>) ((OnnxMap)probs.get(0)).getValue();
                 float negProb = (float) probsMap.get(0L);
                 float posProb = (float) probsMap.get(1L);
 
@@ -45,10 +61,6 @@ public class ModelForecast {
 
     public static float[] prepareModelInput(CompetitorStats[] competitors) throws IOException, JSONException {
         float[] inputVector = createInputVector(competitors);
-        JSONObject scalerParams = new JSONObject(new String(Files.readAllBytes(Paths.get("src/main/resources/lr_model/scaler_params.json"))));
-        float[] means = jsonArrayToFloatArray(scalerParams.getJSONArray("mean"));
-        float[] scales = jsonArrayToFloatArray(scalerParams.getJSONArray("scale"));
-
         inputVector = scaleInputVector(inputVector, means, scales);
         return inputVector;
     }
