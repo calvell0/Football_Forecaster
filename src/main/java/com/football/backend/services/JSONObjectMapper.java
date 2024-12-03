@@ -250,7 +250,6 @@ public class JSONObjectMapper {
                 }
             }
         }
-        LOG.info("Stats parsed and loaded into memory");
     }
 
     private static ArrayList<String> getStatsToBeAveraged(){
