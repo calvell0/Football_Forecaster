@@ -2,9 +2,6 @@ package com.football.backend.services;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.football.backend.models.*;
-import com.football.backend.repositories.CompetitorRepository;
-import com.football.backend.repositories.NFLEventRepository;
-import com.football.backend.repositories.TeamRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,21 +20,14 @@ public class DataService {
 
     private static final int ESTIMATED_NUM_OF_EVENTS = 400;
 
-    private APIService apiService;
-    private TeamRepository teamRepository;
-    private CompetitorRepository competitorRepository;
-    private NFLEventRepository eventRepository;
+    private final APIService apiService;
     private List<NFLEvent> mappedEvents;
     private List<Competitor> mappedCompetitors;
-    private Set<Integer> existingEventIds;
-    private JSONObjectMapper jsonObjectMapper;
+    private final JSONObjectMapper jsonObjectMapper;
 
     @Autowired
-    public DataService(APIService apiService, TeamRepository teamRepository, CompetitorRepository competitorRepository, NFLEventRepository eventRepository, JSONObjectMapper jsonObjectMapper) {
+    public DataService(APIService apiService, JSONObjectMapper jsonObjectMapper) {
         this.apiService = apiService;
-        this.teamRepository = teamRepository;
-        this.competitorRepository = competitorRepository;
-        this.eventRepository = eventRepository;
         this.jsonObjectMapper = jsonObjectMapper;
         this.mappedEvents = new ArrayList<>(ESTIMATED_NUM_OF_EVENTS);
         this.mappedCompetitors = new ArrayList<>(ESTIMATED_NUM_OF_EVENTS * 2); // 2 competitors for each event

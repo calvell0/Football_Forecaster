@@ -1,4 +1,4 @@
-import {DelayLevel, NFLEvent, Team, TeamResponseObject} from "./models/models.js";
+import {DelayLevel} from "./models/models.js";
 import {DataClient} from "./models/DataClient.js";
 import axios, {AxiosResponse} from "axios";
 import {sleep} from "./utils/generalUtils.js";
@@ -36,7 +36,6 @@ const delays = {
 export class HttpDataClient implements DataClient {
 
     readonly API_BASE_URL: string = "https://site.api.espn.com/apis/site/v2/sports/football/nfl/";
-    private hasFailed: boolean = false;
 
     constructor() {
 
@@ -52,7 +51,6 @@ export class HttpDataClient implements DataClient {
     }
 
     private async getAllEvents(year: string): Promise<any> {
-        const events: NFLEvent[] = [];
         const scoreboardURL = `scoreboard?dates=${year}&limit=1000`;
         const response = await this.reqDataWithRetries(this.API_BASE_URL + scoreboardURL, parseInt(year));
         console.log(`Request for year ${year} successful.`);
@@ -65,7 +63,7 @@ export class HttpDataClient implements DataClient {
         const teams = [];
         const response = await axios.get(this.API_BASE_URL + "teams")
             .catch((error: any) => {
-                console.error("[ERROR] Request failed. Check your network or ensure that you're not rate-limited.");
+                console.error("[ERROR] Request failed. Check your network or ensure that you're not rate-limited.", error);
             }) as AxiosResponse;
         // console.log(response.data.sports[0].leagues[0].teams);
 
@@ -74,10 +72,6 @@ export class HttpDataClient implements DataClient {
         });
         // console.log(teams);
         return teams;
-
-    }
-
-    handleRequestFailure = async (sleepTime: number)=>  {
 
     }
 
