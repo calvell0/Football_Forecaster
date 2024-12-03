@@ -6,7 +6,6 @@ import com.football.backend.models.NFLEvent;
 import com.football.backend.models.Team;
 import com.football.backend.models.OutcomeForecast;
 import com.football.backend.repositories.LogoRepository;
-import com.football.backend.repositories.NFLEventRepository;
 import com.football.backend.repositories.TeamRepository;
 import com.football.backend.services.DataService;
 import com.football.backend.services.ModelForecast;
@@ -31,15 +30,13 @@ public class WebController {
 
     private final TeamRepository teamRepository;
     private final ScheduleCacheManager cacheManager;
-    private final NFLEventRepository nflEventRepository;
     private final LogoRepository logoRepository;
     private final DataService dataService;
 
     @Autowired
-    public WebController(TeamRepository teamRepository, ScheduleCacheManager cacheManager, NFLEventRepository nflEventRepository, LogoRepository logoRepository, DataService dataService) {
+    public WebController(TeamRepository teamRepository, ScheduleCacheManager cacheManager, LogoRepository logoRepository, DataService dataService) {
         this.teamRepository = teamRepository;
         this.cacheManager = cacheManager;
-        this.nflEventRepository = nflEventRepository;
         this.logoRepository = logoRepository;
         this.dataService = dataService;
     }
@@ -50,7 +47,7 @@ public class WebController {
 
         List<NFLEvent> scheduledEvents = this.cacheManager.getScheduledEvents();
         List<Logo> logos = logoRepository.findAll();
-        LOG.info(scheduledEvents.get(0).toString());
+        LOG.info(scheduledEvents.getFirst().toString());
         model.addAttribute("teams", teams);
         model.addAttribute("logos", logos);
         model.addAttribute("scheduledEvents", scheduledEvents);
@@ -62,8 +59,16 @@ public class WebController {
     public String matchupPrediction(@RequestParam(name = "home") int homeId,
                                     @RequestParam(name = "away") int awayId,
                                     Model model) {
+        if (homeId == awayId) {
+            throw new IllegalArgumentException("Home and away team IDs must be different");
+        }
+
         Team home = teamRepository.findById(homeId);
         Team away = teamRepository.findById(awayId);
+
+        if (home == null || away == null) {
+            throw new IllegalArgumentException("Invalid team ID");
+        }
 
         Logo homeLogo = logoRepository.findOneByTeamId(homeId);
         Logo awayLogo = logoRepository.findOneByTeamId(awayId);
@@ -78,13 +83,12 @@ public class WebController {
         String awayLogoUrl = (awayLogo != null && awayLogo.getHref() != null)
                 ? awayLogo.getHref()
                 : "/images/default-away-logo.png";
+
         OutcomeForecast prediction;
         try {
             var modelInput = ModelForecast.prepareModelInput(this.dataService.fetchTeamStatistics(homeId, awayId));
             prediction = ModelForecast.getPrediction(modelInput);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        } catch (JSONException | OrtException e) {
+        } catch (IOException | JSONException | OrtException e) {
             throw new RuntimeException(e);
         }
 

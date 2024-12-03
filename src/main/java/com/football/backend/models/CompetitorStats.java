@@ -1,8 +1,6 @@
 package com.football.backend.models;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import org.springframework.data.annotation.Id;
-import org.springframework.data.relational.core.mapping.Table;
 
 
 public class CompetitorStats {

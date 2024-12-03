@@ -4,7 +4,6 @@ import {persist_boxscores, persist_events, persist_teams} from "../db/data_loadi
 import {parseEventStatus} from "../utils/dataUtils.js";
 import {formatISO9075} from "date-fns";
 import {performance} from "perf_hooks";
-import {sleep} from "../utils/generalUtils.js";
 
 //TODO: maybe refactor a separate JSONObjectMapper class to handle JSON parsing
 

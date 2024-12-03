@@ -1,9 +1,6 @@
-import {getBoxScores, getEvents, getTeams} from "../db/data_loading.js";
+import {getBoxScores, getTeams} from "../db/data_loading.js";
 import {
-    Boxscore,
     BoxscoreEventJoin,
-    NFLEvent,
-    PartialEvent,
     SeasonStats,
     SeasonTotals,
     Team
@@ -77,7 +74,7 @@ const extractBoxscores = async (teams: Team[], boxscores: BoxscoreEventJoin[]): 
 
             for (let i = 0; i < teamBoxscores.length; i++){
 
-                cumulativeStats = sumStats(cumulativeStats, teamBoxscores[i], i);
+                cumulativeStats = sumStats(cumulativeStats, teamBoxscores[i]);
                 // create new object so array doesn't have multiple references to the same object
                 seasonStats[i] = { ...cumulativeStats };
 
@@ -93,7 +90,7 @@ const extractBoxscores = async (teams: Team[], boxscores: BoxscoreEventJoin[]): 
     return stats;
 }
 
-const sumStats = (cumulative: SeasonStats, next: BoxscoreEventJoin, gameNum: number): SeasonStats => {
+const sumStats = (cumulative: SeasonStats, next: BoxscoreEventJoin): SeasonStats => {
 
 
     cumulative.event_id = next.event_id;
