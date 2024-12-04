@@ -9,6 +9,7 @@ from sklearn.pipeline import Pipeline
 import time
 from skl2onnx import convert_sklearn
 from skl2onnx.common.data_types import FloatTensorType
+import json
 import joblib
 
 df = pd.read_csv("./training_data/training_data.csv")
@@ -40,6 +41,16 @@ print("training...")
 start = time.time()
 pipeline.fit(X_train, y_train)
 print("Training time: ", time.time()-start)
+
+scaler = pipeline.named_steps['scaler']
+scaler_params = {
+    'mean': scaler.mean_.tolist(),
+    'scale': scaler.scale_.tolist(),
+    'feature_names': list(X.columns)
+}
+
+with open("../src/main/resources/lr_model/scaler_params.json", "w") as f:
+    json.dump(scaler_params, f, indent=2)
 
 # Predictions and evaluation
 y_pred = pipeline.predict(X_test)
