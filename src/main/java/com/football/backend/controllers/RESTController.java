@@ -6,7 +6,7 @@ import com.football.backend.models.OutcomeForecast;
 import com.football.backend.repositories.TeamRepository;
 import com.football.backend.models.Team;
 import com.football.backend.services.DataService;
-import com.football.backend.services.ModelForecast;
+import com.football.backend.services.ModelForecaster;
 import com.football.backend.services.ScheduleCacheManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -27,12 +27,14 @@ public class RESTController {
     private final TeamRepository teamRepository;
     private final ScheduleCacheManager cacheManager;
     private final DataService dataService;
+    private final ModelForecaster modelForecaster;
 
     @Autowired
-    public RESTController(TeamRepository teamRepository, ScheduleCacheManager cacheManager, DataService dataService) {
+    public RESTController(TeamRepository teamRepository, ScheduleCacheManager cacheManager, DataService dataService, ModelForecaster modelForecaster) {
         this.teamRepository = teamRepository;
         this.cacheManager = cacheManager;
         this.dataService = dataService;
+        this.modelForecaster = modelForecaster;
     }
 
     /**
@@ -84,8 +86,7 @@ public class RESTController {
         String awayTeam = teamRepository.findById(awayId).getDisplayName();
         LOG.info("Predicting outcome for {} vs {}", homeTeam, awayTeam);
         try {
-            var modelInput = ModelForecast.prepareModelInput(this.dataService.fetchTeamStatistics(homeId, awayId));
-            return ModelForecast.getPrediction(modelInput);
+            return this.modelForecaster.getPrediction(this.dataService.fetchTeamStatistics(homeId, awayId));
         } catch (IOException e) {
             throw new RuntimeException(e);
         } catch (JSONException e) {

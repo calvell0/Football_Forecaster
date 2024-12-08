@@ -8,7 +8,7 @@ import com.football.backend.models.OutcomeForecast;
 import com.football.backend.repositories.LogoRepository;
 import com.football.backend.repositories.TeamRepository;
 import com.football.backend.services.DataService;
-import com.football.backend.services.ModelForecast;
+import com.football.backend.services.ModelForecaster;
 import com.football.backend.services.ScheduleCacheManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,13 +32,15 @@ public class WebController {
     private final ScheduleCacheManager cacheManager;
     private final LogoRepository logoRepository;
     private final DataService dataService;
+    private final ModelForecaster modelForecaster;
 
     @Autowired
-    public WebController(TeamRepository teamRepository, ScheduleCacheManager cacheManager, LogoRepository logoRepository, DataService dataService) {
+    public WebController(TeamRepository teamRepository, ScheduleCacheManager cacheManager, LogoRepository logoRepository, DataService dataService, ModelForecaster modelForecaster) {
         this.teamRepository = teamRepository;
         this.cacheManager = cacheManager;
         this.logoRepository = logoRepository;
         this.dataService = dataService;
+        this.modelForecaster = modelForecaster;
     }
 
     @GetMapping("/")
@@ -86,9 +88,8 @@ public class WebController {
 
         OutcomeForecast prediction;
         try {
-            var modelInput = ModelForecast.prepareModelInput(this.dataService.fetchTeamStatistics(homeId, awayId));
-            prediction = ModelForecast.getPrediction(modelInput);
-        } catch (IOException | JSONException | OrtException e) {
+            prediction = this.modelForecaster.getPrediction(this.dataService.fetchTeamStatistics(homeId, awayId));
+        } catch (IOException | JSONException e) {
             throw new RuntimeException(e);
         }
 

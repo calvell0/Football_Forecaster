@@ -2,6 +2,7 @@
 import mysql, {Connection} from 'mysql2/promise';
 import dotenv from "dotenv";
 
+
 dotenv.config({
     path: '../.env'
 });
@@ -210,29 +211,29 @@ export const initialize_database = async (preserveDB: boolean = false): Promise<
 
     await host.query(`
         CREATE VIEW EventCompetitors AS
-SELECT
-    e.id AS event_id,
-    e.home_team AS home_team_id,
-    e.away_team AS away_team_id,
-    home_comp.winner AS home_winner,
-    home_comp.home_wins AS home_home_wins,
-    home_comp.home_losses AS home_home_losses,
-    home_comp.away_wins AS home_away_wins,
-    home_comp.away_losses AS home_away_losses,
-    home_comp.total_wins AS home_total_wins,
-    home_comp.total_losses AS home_total_losses,
-    away_comp.home_wins AS away_home_wins,
-    away_comp.home_losses AS away_home_losses,
-    away_comp.away_wins AS away_away_wins,
-    away_comp.away_losses AS away_away_losses,
-    away_comp.total_wins AS away_total_wins,
-    away_comp.total_losses AS away_total_losses
-FROM
-    NFL_Event e
-        JOIN
-    Competitor home_comp ON e.id = home_comp.event_id AND e.home_team = home_comp.team_id
-        JOIN
-    Competitor away_comp ON e.id = away_comp.event_id AND e.away_team = away_comp.team_id;
+    SELECT
+        e.id AS event_id,
+        e.home_team AS home_team_id,
+        e.away_team AS away_team_id,
+        home_comp.winner AS home_winner,
+        home_comp.home_wins AS home_home_wins,
+        home_comp.home_losses AS home_home_losses,
+        home_comp.away_wins AS home_away_wins,
+        home_comp.away_losses AS home_away_losses,
+        home_comp.total_wins AS home_total_wins,
+        home_comp.total_losses AS home_total_losses,
+        away_comp.home_wins AS away_home_wins,
+        away_comp.home_losses AS away_home_losses,
+        away_comp.away_wins AS away_away_wins,
+        away_comp.away_losses AS away_away_losses,
+        away_comp.total_wins AS away_total_wins,
+        away_comp.total_losses AS away_total_losses
+    FROM
+        NFL_Event e
+            JOIN
+        Competitor home_comp ON e.id = home_comp.event_id AND e.home_team = home_comp.team_id
+            JOIN
+        Competitor away_comp ON e.id = away_comp.event_id AND e.away_team = away_comp.team_id;
     `);
 
     await host.query(`
@@ -329,6 +330,11 @@ FROM
         JOIN
     season_stats away ON ec.event_id = away.event_id AND ec.away_team_id = away.team_id;
     `)
+
+    //TODO:
+    await host.query(`
+        CREATE VIEW alt_competitor_stats AS
+    `);
 
 
 

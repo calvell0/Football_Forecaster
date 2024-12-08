@@ -1,91 +1,122 @@
+import sys
+
 import pandas as pd
 import numpy as np
-from sklearn.model_selection import train_test_split, KFold
+from sklearn.model_selection import train_test_split
 from sklearn.linear_model import LogisticRegression
-from sklearn.metrics import accuracy_score, confusion_matrix
-from sklearn.metrics import roc_curve, roc_auc_score
+from sklearn.metrics import accuracy_score, confusion_matrix, classification_report
 from sklearn.preprocessing import StandardScaler
 from sklearn.pipeline import Pipeline
-import time
-from skl2onnx import convert_sklearn
-from skl2onnx.common.data_types import FloatTensorType
-import json
-import joblib
+from flask import Flask, request
+import joblib as joblib
+from collections.abc import Iterable
 
-df = pd.read_csv("./training_data/training_data.csv")
+EXPECTED_COLS_COUNT = 0
+FEATURE_NAMES = []
 
-if df.__len__ == 0:
-    print("No data, make sure you run 'npm run export' first")
-    exit(-1)
+def load_data():
+    df = pd.read_csv("./training_data/training_data.csv")
+    df.drop(columns="event_id", inplace=True)
 
-df.drop(columns="event_id", inplace=True)
+    print("Class Distribution:")
+    print(df['home_winner'].value_counts(normalize=True))
 
-# Split the data into features and target
-X = df.drop(['home_winner', 'home_avg_tackles_for_loss',
-             'away_avg_tackles_for_loss', 'home_avg_drives', 'away_avg_drives',
-             'home_completion_pct', 'away_completion_pct'], axis=1)
-y = df['home_winner']
+    X = df.drop(['home_winner', 'home_avg_tackles_for_loss',
+                 'away_avg_tackles_for_loss', 'home_avg_drives',
+                 'away_avg_drives', 'home_completion_pct', 'away_completion_pct'], axis=1)
+    y = df['home_winner']
 
-# Create a pipeline that includes scaling and logistic regression
-pipeline = Pipeline([
-    ('scaler', StandardScaler()),
-    ('classifier', LogisticRegression(max_iter=500))
-])
+    X_train, X_test, y_train, y_test = train_test_split(
+        X, y, test_size=0.33, random_state=12, stratify=y)
 
-# Fit the pipeline on the entire training data
-X_train, X_test, y_train, y_test = train_test_split(
-    X, y,
-    test_size=0.33, random_state=12)
+    print(df.sample(5))
 
-print("training...")
-start = time.time()
-pipeline.fit(X_train, y_train)
-print("Training time: ", time.time()-start)
+    return X_train, X_test, y_train, y_test, X
 
-scaler = pipeline.named_steps['scaler']
-scaler_params = {
-    'mean': scaler.mean_.tolist(),
-    'scale': scaler.scale_.tolist(),
-    'feature_names': list(X.columns)
-}
 
-with open("../src/main/resources/lr_model/scaler_params.json", "w") as f:
-    json.dump(scaler_params, f, indent=2)
+def create_pipeline():
+    global EXPECTED_COLS_COUNT
+    X_train, X_test, y_train, y_test, X = load_data()
 
-# Predictions and evaluation
-y_pred = pipeline.predict(X_test)
-y_score2 = pipeline.predict_proba(X_test)[:,1]
+    model = Pipeline([
 
-print(accuracy_score(y_pred, y_test))
-print(confusion_matrix(y_test, y_pred))
-
-# Optional: Cross-validation
-model_accuracy = []
-kf = KFold(n_splits=10)
-for train, val in kf.split(X_train, y_train):
-    pipe_cv = Pipeline([
         ('scaler', StandardScaler()),
-        ('classifier', LogisticRegression())
+        ('classifier', LogisticRegression(
+            max_iter=1000,
+            C=0.1,
+            class_weight='balanced'
+        ))
     ])
-    pipe_cv.fit(X_train.iloc[train], y_train.iloc[train])
-    y_pred = pipe_cv.predict(X_train.iloc[val])
-    model_accuracy.append({
-        'model': pipe_cv,
-        'acc': accuracy_score(y_pred, y_train.iloc[val])
+
+    print(X_test.sample(2))
+
+
+    model.fit(X_train, y_train)
+
+    y_pred = model.predict(X_test)
+    y_prob = model.predict_proba(X_test)
+
+    print("\nClassification Report:")
+    print(classification_report(y_test, y_pred))
+
+    print("\nConfidence Levels:")
+    for true, pred, prob in zip(y_test, y_pred, y_prob):
+        max_prob = max(prob)
+        # print(f"True: {true}, Predicted: {pred}, Confidence: {max_prob:.4f}")
+
+    feature_importance = pd.DataFrame({
+        'feature': X.columns,
+        'importance': np.abs(model.named_steps['classifier'].coef_[0])
     })
-    print(accuracy_score(y_pred, y_train.iloc[val]))
+    feature_importance = feature_importance.sort_values('importance', ascending=False)
+    print("\nFeature Importance:")
+    print(feature_importance)
+    EXPECTED_COLS_COUNT = len(X.columns)
 
-# Optional: Choose best model from cross-validation
-clf_best = max(model_accuracy, key = lambda x: x['acc'])['model']
 
-input_data = [4.0, 1.0, 5.0, 1.0, 9.0, 2.0, 5.0, 1.0, 6.0, 0.0, 11.0, 1.0, 20.727, 11.727273, 6.4545455, 2.5454545, 0.4031, 0.57143, 62.0, 351.0909, 0.90909094, 2.909091, 18.454546, 117.091, 29.09091, 65.93, 6.4545455, 50.090908, 1.6363636, 0.72727275, 1.9090909, 0.54545456, 102.3, 66.0, 3.4545455, 5.4545455, 1.4545455, 0.27272728, 24.625, 7.05, 0.91667, 2.1818182, 3.5454545, 42.436, 23.25, 12.666667, 9.0, 1.5833334, 0.45714, 0.64706004, 63.75, 395.16666, 0.75, 2.0, 15.166667, 154.417, 32.416668, 74.57, 6.1666665, 60.833332, 0.9166667, 0.16666667, 2.0, 1.75, 110.402, 62.083332, 2.5, 5.0, 1.1666666, 0.16666667, 33.555557, 13.545455, 0.95, 1.6666666, 3.0833333, 48.459]
-input_data = pd.DataFrame([input_data], columns=X.columns)
-print("PREDICTION:", pipeline.predict_proba(input_data))
-# Convert pipeline to ONNX
-initial_type = [('float_input', FloatTensorType([None, X_train.shape[1]]))]
-onnx_model = convert_sklearn(pipeline, initial_types=initial_type)
 
-# Save ONNX model
-with open("../src/main/resources/lr_model/model.onnx", "wb") as f:
-    f.write(onnx_model.SerializeToString())
+    return model
+
+def persist_pipeline(model):
+    joblib.dump(model, 'pipeline.pkl')
+
+app = Flask(__name__)
+
+try:
+    pipeline = joblib.load('pipeline.pkl')
+    EXPECTED_COLS_COUNT = len(pipeline.feature_names_in_)
+except FileNotFoundError:
+    pipeline = create_pipeline()
+    persist_pipeline(pipeline)
+
+feature_names = pipeline.feature_names_in_
+
+@app.post('/predict')
+def get_prediction():
+
+    input_vector = request.json
+    if input_vector is None or not isinstance(input_vector, Iterable) or len(input_vector) != EXPECTED_COLS_COUNT:
+        return "Invalid input", 400
+    input_df = pd.DataFrame([input_vector], columns=feature_names)
+
+    print(input_df)
+
+    prediction = pipeline.predict(input_df).tolist()[0]
+    probability = pipeline.predict_proba(input_df).tolist()
+    probability = max(probability[0])
+    print(f"Prediction: {prediction}, Probability: {probability}")
+    return {
+        'outcome': prediction,
+        'confidence': probability
+    }
+
+
+# initial_type = [('float_input', FloatTensorType([None, X_train.shape[1]]))]
+# onnx_model = convert_sklearn(
+#     pipeline,
+#     initial_types=initial_type,
+#     target_opset=12,
+#     options={id(pipeline.named_steps['classifier']): {'zipmap': False}}
+# )
+
 

@@ -1,8 +1,12 @@
 package com.football.backend.services;
 
 import com.football.backend.config.APIProperties;
+import com.football.backend.models.OutcomeForecast;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.web.client.RestTemplateBuilder;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
@@ -16,6 +20,7 @@ public class APIService {
     private final RestTemplate restTemplate;
     private final APIProperties apiProperties;
     private final String API_BASE_URL;
+    private final int MODEL_PORT = 5000;
 
     @Autowired
     public APIService(RestTemplateBuilder restTemplateBuilder, APIProperties apiProperties) {
@@ -37,6 +42,15 @@ public class APIService {
     public ResponseEntity<String> getTeamRecords(int teamId){
         String url = "http://sports.core.api.espn.com/v2/sports/football/leagues/nfl/seasons/2024/types/2/teams/" + teamId + "/record?lang=en&region=us";
         return restTemplate.getForEntity(url, String.class);
+    }
+
+    public OutcomeForecast getPrediction(float[] input) {
+        String url = "http://localhost:" + MODEL_PORT + "/predict";
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        HttpEntity<float[]> request = new HttpEntity<>(input, headers);
+
+        return restTemplate.postForObject(url, request, OutcomeForecast.class);
     }
 
 

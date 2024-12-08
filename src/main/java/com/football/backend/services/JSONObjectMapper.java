@@ -283,7 +283,7 @@ public class JSONObjectMapper {
         String[] stats = {
                 "fourthDownConvPct",
                 "thirdDownConvPct",
-                "redZoneEfficiencyPct",
+                "redzoneEfficiencyPct",
                 "completionPct",
                 "fieldGoalPct"
         };
