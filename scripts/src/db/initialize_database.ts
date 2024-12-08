@@ -331,11 +331,6 @@ FROM
     season_stats away ON ec.event_id = away.event_id AND ec.away_team_id = away.team_id;
     `)
 
-    //TODO:
-    await host.query(`
-        CREATE VIEW alt_competitor_stats AS
-    `);
-
 
 
     await host.end(err => {
