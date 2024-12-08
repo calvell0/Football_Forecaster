@@ -4,3 +4,5 @@ scikit-learn
 skl2onnx
 joblib
 flask
+json
+

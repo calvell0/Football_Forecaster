@@ -39,6 +39,7 @@ def create_pipeline():
     X_train, X_test, y_train, y_test, X = load_data()
 
     model = Pipeline([
+
         ('scaler', StandardScaler()),
         ('classifier', LogisticRegression(
             max_iter=1000,
