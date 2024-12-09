@@ -116,7 +116,7 @@ def get_prediction():
 
     input_vector = request.json
     if input_vector is None or not isinstance(input_vector, Iterable) or len(input_vector) != 76:
-        return "Invalid input", 400
+        return "Invalid input vector", 400
     input_df = pd.DataFrame([input_vector], columns=ORIG_FEATURE_NAMES)
     input_df = replace_record_with_win_pct(input_df)
 
