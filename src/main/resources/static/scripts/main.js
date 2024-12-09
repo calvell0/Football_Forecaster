@@ -131,14 +131,12 @@ function findGameDates() {
                 const calendarInput = document.getElementById('game-date');
                 calendarInput.value = gameDate;
 
-
-                // Reinitialize Flatpickr to make sure it's set to the selected date
                 flatpickr("#game-date", {
                     defaultDate: gameDate,
                     enableTime: false,
                     dateFormat: "Y-m-d",
                     onChange: function(selectedDates, dateStr, instance) {
-                        // Navigate to prediction.html with the selected date as a query parameter
+
                         window.location.href = `/prediction?home=${homeId}&away=${awayId}`;
                     }
                 });
@@ -154,21 +152,20 @@ flatpickr("#game-date", {
     dateFormat: "Y-m-d",
 });
 
+function getPredictions() {
+    // Get the values from the search bars
+    const awayId = document.getElementById('query').getAttribute('data-id');
+    const homeId = document.getElementById('query2').getAttribute('data-id');
+    if (!awayId || !homeId) {
+        alert("Please select both teams before proceeding.");
+        return;
+    }
+
+    window.location.href = `/prediction?home=${homeId}&away=${awayId}`;
+
+}
 
 
-
-// Close dropdowns if clicked outside
-document.addEventListener("click", function (e) {
-    const dropdowns = document.querySelectorAll(".dropdown-content");
-    dropdowns.forEach(dropdown => {
-        const isClickInsideDropdown = dropdown.contains(e.target);
-        const isClickOnButton = e.target.closest(".dropbtn");
-
-        if (!isClickInsideDropdown && !isClickOnButton) {
-            dropdown.style.display = "none"; // Hide the dropdown if clicked outside
-        }
-    });
-});
 
 
 
@@ -183,4 +180,6 @@ function toggleDropdown(event, dropdownId) {
     } else {
         dropdown.style.display = "none";
     }
+
 }
+

@@ -12,6 +12,32 @@
     <script th:src="@{/scripts/main.js}"></script>
 
 </head>
+<script>
+
+    // Close dropdowns if clicked outside
+    document.addEventListener('click', function (event) {
+        const dropdowns = document.querySelectorAll('.dropdown-content');
+        let clickedInsideDropdown = false;
+
+        // Loop through all dropdowns
+        dropdowns.forEach((dropdown) => {
+            if (dropdown.contains(event.target)) {
+                clickedInsideDropdown = true; // Clicked inside a dropdown
+            } else {
+                dropdown.style.display = 'none'; // Hide other dropdowns
+            }
+        });
+
+        // If the click was inside a dropdown toggle button, toggle its display
+        if (event.target.classList.contains('dropbtn') || event.target.closest('.dropbtn')) {
+            const dropdownId = event.target.closest('.dropbtn').getAttribute('onclick').match(/'([^']+)'/)[1];
+            const dropdown = document.getElementById(dropdownId);
+            dropdown.style.display = dropdown.style.display === 'block' ? 'none' : 'block';
+        }
+    });
+
+
+</script>
 
 <body>
 <header >
@@ -50,7 +76,7 @@
                     </ul>
                 </div>
             </div>
-
+            <div><p>AT</p></div>
             <div class="dropdown">
                 <form class="form2" id="form2">
                     <input class="search-bar" type="search" id="query2" name="q" placeholder="Search...." readonly>
@@ -74,6 +100,11 @@
                 </div>
             </div>
         </div>
+        <div class="get-pred">
+        <button class="hidden-bttn"  onclick="getPredictions()" style="display: none;">
+            Get Prediction!
+        </button>
+        </div>
         <button class = "findbttn"
         onclick="findGameDates()">
             Find Game Dates
@@ -89,6 +120,50 @@
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/flatpickr/4.6.9/flatpickr.min.js"></script>
 <script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const input1 = document.getElementById('query');
+        const input2 = document.getElementById('query2');
+        const hiddenButton = document.querySelector('.hidden-bttn');
+
+        function checkInputs() {
+            // Check if both input fields have values
+            if (input1.value.trim() !== '' && input2.value.trim() !== '') {
+                hiddenButton.style.display = 'block';
+            } else {
+                hiddenButton.style.display = 'none';
+            }
+
+            if(input1.value == input2.value){
+                alert("You CANNOT select 2 of the same TEAMS");
+                hiddenButton.style.display = 'none';
+                input1.value = '';
+                input2.value = '';
+            }
+        }
+
+        const dropdownItems1 = document.querySelectorAll('#teamDropdown1 a');
+        const dropdownItems2 = document.querySelectorAll('#teamDropdown2 a');
+
+        dropdownItems1.forEach(item => {
+            item.addEventListener('click', function () {
+                checkInputs();
+            });
+        });
+
+        dropdownItems2.forEach(item => {
+            item.addEventListener('click', function () {
+                checkInputs();
+            });
+        });
+    });
+
+
+
+
+
+
+
+
 
 </script>
 </body>

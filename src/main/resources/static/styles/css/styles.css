@@ -325,3 +325,22 @@ h2 {
 .container{
    margin-left: 40px ;
 }
+.get-pred{
+    margin-bottom: 30px;
+}
+
+ .get-pred .hidden-bttn{
+    background-color: #4caf50;
+    border: none;
+    color: black;
+    padding: 10px 20px;
+    font-size: 16px;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+a.disabled {
+    pointer-events: none;
+    opacity: 0.5;
+    cursor: default;
+}
