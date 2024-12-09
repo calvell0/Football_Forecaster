@@ -257,7 +257,7 @@ export const export_training_data = async (output_path: string) => {
 
     csvData = `${columnNames}\n${csvData}`;
 
-    fs.mkdirSync(output_path.substring(0, output_path.lastIndexOf('/')), { recursive: true });
+    fs.mkdirSync(output_path.substring(0, output_path.lastIndexOf('\\')), { recursive: true });
     fs.writeFileSync(output_path, csvData);
     console.log(`Export complete. Data saved to ${output_path}`);
     await host.end();
