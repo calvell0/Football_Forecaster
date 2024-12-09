@@ -12,9 +12,21 @@ import joblib as joblib
 from collections.abc import Iterable
 
 EXPECTED_COLS_COUNT = 0
-FEATURE_NAMES = []
+ORIG_FEATURE_NAMES = []
+
+def replace_record_with_win_pct(df: pd.DataFrame):
+    df['home_home_win_pct'] = df['home_home_wins'] / (df['home_home_wins'] + df['home_home_losses']).replace({0: 0.5})
+    df['home_away_win_pct'] = df['home_away_wins'] / (df['home_away_wins'] + df['home_away_losses']).replace({0: 0.5})
+    df['away_home_win_pct'] = df['away_home_wins'] / (df['away_home_wins'] + df['away_home_losses']).replace({0: 0.5})
+    df['away_away_win_pct'] = df['away_away_wins'] / (df['away_away_wins'] + df['away_away_losses']).replace({0: 0.5})
+    df['home_overall_win_pct'] = df['home_total_wins'] / (df['home_total_wins'] + df['home_total_losses']).replace({0: 0.5})
+    df['away_overall_win_pct'] = df['away_total_wins'] / (df['away_total_wins'] + df['away_total_losses']).replace({0: 0.5})
+
+    df.drop(columns=['home_home_wins', 'home_home_losses', 'home_away_wins', 'home_away_losses', 'away_home_wins', 'away_home_losses', 'away_away_wins', 'away_away_losses', 'home_total_wins', 'home_total_losses', 'away_total_wins', 'away_total_losses'], inplace=True)
+    return df
 
 def load_data():
+    global ORIG_FEATURE_NAMES
     df = pd.read_csv("./training_data/training_data.csv")
     df.drop(columns="event_id", inplace=True)
 
@@ -25,6 +37,10 @@ def load_data():
                  'away_avg_tackles_for_loss', 'home_avg_drives',
                  'away_avg_drives', 'home_completion_pct', 'away_completion_pct'], axis=1)
     y = df['home_winner']
+    ORIG_FEATURE_NAMES = X.columns
+
+    X = replace_record_with_win_pct(X)
+    print(X.sample(5))
 
     X_train, X_test, y_train, y_test = train_test_split(
         X, y, test_size=0.33, random_state=12, stratify=y)
@@ -80,6 +96,9 @@ def create_pipeline():
 def persist_pipeline(model):
     joblib.dump(model, 'pipeline.pkl')
 
+
+
+
 app = Flask(__name__)
 
 try:
@@ -95,9 +114,10 @@ feature_names = pipeline.feature_names_in_
 def get_prediction():
 
     input_vector = request.json
-    if input_vector is None or not isinstance(input_vector, Iterable) or len(input_vector) != EXPECTED_COLS_COUNT:
+    if input_vector is None or not isinstance(input_vector, Iterable) or len(input_vector) != 76:
         return "Invalid input", 400
-    input_df = pd.DataFrame([input_vector], columns=feature_names)
+    input_df = pd.DataFrame([input_vector], columns=ORIG_FEATURE_NAMES)
+    input_df = replace_record_with_win_pct(input_df)
 
     print(input_df)
 
