@@ -21,6 +21,8 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import java.io.IOException;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.*;
 
 @Controller
@@ -92,6 +94,7 @@ public class WebController {
         } catch (IOException | JSONException e) {
             throw new RuntimeException(e);
         }
+        BigDecimal confidence = new BigDecimal(prediction.getConfidence() * 100).setScale(2, RoundingMode.HALF_UP);
 
         model.addAttribute("homeTeam", home);
         model.addAttribute("awayTeam", away);
@@ -100,6 +103,7 @@ public class WebController {
         model.addAttribute("homeTeamColor", homeColor);
         model.addAttribute("awayTeamColor", awayColor);
         model.addAttribute("prediction", prediction);
+        model.addAttribute("confidence", confidence);
 
         return "prediction";
     }
