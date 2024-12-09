@@ -93,11 +93,8 @@ def create_pipeline():
 
     return model
 
-def persist_pipeline(model):
-    joblib.dump({
-        'model': model,
-        'expected_cols': EXPECTED_COLS_COUNT,
-    }, 'pipeline.pkl')
+def persist_pipeline(model_obj):
+    joblib.dump(model_obj, 'pipeline.pkl')
 
 
 
@@ -107,10 +104,10 @@ app = Flask(__name__)
 try:
     model_info = joblib.load('pipeline.pkl')
     pipeline = model_info['model']
-    EXPECTED_COLS_COUNT = model_info['expected_cols']
+    ORIG_FEATURE_NAMES = model_info['orig_features']
 except FileNotFoundError:
     pipeline = create_pipeline()
-    persist_pipeline(pipeline)
+    persist_pipeline({ 'model': pipeline, 'orig_features': ORIG_FEATURE_NAMES })
 
 feature_names = pipeline.feature_names_in_
 
@@ -119,7 +116,7 @@ def get_prediction():
 
     input_vector = request.json
     if input_vector is None or not isinstance(input_vector, Iterable) or len(input_vector) != 76:
-        return "Invalid input", 400
+        return "Invalid input vector", 400
     input_df = pd.DataFrame([input_vector], columns=ORIG_FEATURE_NAMES)
     input_df = replace_record_with_win_pct(input_df)
 
