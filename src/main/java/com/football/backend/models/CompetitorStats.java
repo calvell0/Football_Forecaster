@@ -62,6 +62,54 @@ public class CompetitorStats {
     private float avgPunts;
     private float yardsPerPunt;
 
+    @Override
+    public String toString() {
+        return "CompetitorStats{" +
+                "teamId=" + teamId +
+                ", gamesPlayed=" + gamesPlayed +
+                ", homeWins=" + homeWins +
+                ", homeLosses=" + homeLosses +
+                ", awayWins=" + awayWins +
+                ", awayLosses=" + awayLosses +
+                ", totalWins=" + totalWins +
+                ", totalLosses=" + totalLosses +
+                ", avgFirstDowns=" + avgFirstDowns +
+                ", avgFirstDownsPassing=" + avgFirstDownsPassing +
+                ", avgFirstDownsRushing=" + avgFirstDownsRushing +
+                ", avgFirstDownsPenalty=" + avgFirstDownsPenalty +
+                ", thirdDownConversionPct=" + thirdDownConversionPct +
+                ", fourthDownConversionPct=" + fourthDownConversionPct +
+                ", avgOffensivePlays=" + avgOffensivePlays +
+                ", avgOffensiveYards=" + avgOffensiveYards +
+                ", completionPct=" + completionPct +
+                ", avgInterceptions=" + avgInterceptions +
+                ", avgSacksAgainst=" + avgSacksAgainst +
+                ", avgYardsLostSacks=" + avgYardsLostSacks +
+                ", avgRushingYards=" + avgRushingYards +
+                ", avgRushingAttempts=" + avgRushingAttempts +
+                ", redzoneConversionPct=" + redzoneConversionPct +
+                ", avgPenalties=" + avgPenalties +
+                ", avgPenaltyYards=" + avgPenaltyYards +
+                ", avgFumblesLost=" + avgFumblesLost +
+                ", avgTurnovers=" + avgTurnovers +
+                ", avgPassingTouchdowns=" + avgPassingTouchdowns +
+                ", avgRushingTouchdowns=" + avgRushingTouchdowns +
+                ", avgPasserRating=" + avgPasserRating +
+                ", avgTackles=" + avgTackles +
+                ", avgSacks=" + avgSacks +
+                ", avgTacklesForLoss=" + avgTacklesForLoss +
+                ", avgPassesDefended=" + avgPassesDefended +
+                ", avgDefensiveInterceptions=" + avgDefensiveInterceptions +
+                ", avgDefensiveTouchdowns=" + avgDefensiveTouchdowns +
+                ", yardsPerKickReturn=" + yardsPerKickReturn +
+                ", yardsPerPuntReturn=" + yardsPerPuntReturn +
+                ", fieldGoalPct=" + fieldGoalPct +
+                ", avgFieldGoalAttempts=" + avgFieldGoalAttempts +
+                ", avgPunts=" + avgPunts +
+                ", yardsPerPunt=" + yardsPerPunt +
+                '}';
+    }
+
     public float getAvgFirstDowns() {
         return avgFirstDowns;
     }

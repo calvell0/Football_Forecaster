@@ -94,7 +94,10 @@ def create_pipeline():
     return model
 
 def persist_pipeline(model):
-    joblib.dump(model, 'pipeline.pkl')
+    joblib.dump({
+        'model': model,
+        'expected_cols': EXPECTED_COLS_COUNT,
+    }, 'pipeline.pkl')
 
 
 
@@ -102,8 +105,9 @@ def persist_pipeline(model):
 app = Flask(__name__)
 
 try:
-    pipeline = joblib.load('pipeline.pkl')
-    EXPECTED_COLS_COUNT = len(pipeline.feature_names_in_)
+    model_info = joblib.load('pipeline.pkl')
+    pipeline = model_info['model']
+    EXPECTED_COLS_COUNT = model_info['expected_cols']
 except FileNotFoundError:
     pipeline = create_pipeline()
     persist_pipeline(pipeline)

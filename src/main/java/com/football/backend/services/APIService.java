@@ -8,8 +8,11 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
+
+import java.util.concurrent.CompletableFuture;
 
 /**
  * Class that manages external API calls and responses
@@ -34,14 +37,16 @@ public class APIService {
         return restTemplate.getForEntity(url, String.class);
     }
 
-    public ResponseEntity<String> getTeamStats(int teamId) {
+    @Async
+    public CompletableFuture<ResponseEntity<String>> getTeamStats(int teamId) {
         String url ="https://sports.core.api.espn.com/v2/sports/football/leagues/nfl/seasons/2024/types/2/teams/"+ teamId + "/statistics";
-        return restTemplate.getForEntity(url, String.class);
+        return CompletableFuture.completedFuture(restTemplate.getForEntity(url, String.class));
     }
 
-    public ResponseEntity<String> getTeamRecords(int teamId){
+    @Async
+    public CompletableFuture<ResponseEntity<String>> getTeamRecords(int teamId){
         String url = "http://sports.core.api.espn.com/v2/sports/football/leagues/nfl/seasons/2024/types/2/teams/" + teamId + "/record?lang=en&region=us";
-        return restTemplate.getForEntity(url, String.class);
+        return CompletableFuture.completedFuture(restTemplate.getForEntity(url, String.class));
     }
 
     public OutcomeForecast getPrediction(float[] input) {

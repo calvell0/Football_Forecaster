@@ -9,6 +9,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 
 /**
  * Class that manages API response data and maps it to model objects
@@ -62,15 +64,29 @@ public class DataService {
         };
 
         try {
-            ResponseEntity<String> homeStatsResponse = apiService.getTeamStats(homeId);
-            ResponseEntity<String> awayStatsResponse = apiService.getTeamStats(awayId);
-            ResponseEntity<String> homeRecordsResponse = apiService.getTeamRecords(homeId);
-            ResponseEntity<String> awayRecordsResponse = apiService.getTeamRecords(awayId);
+            CompletableFuture<ResponseEntity<String>> homeStatsResponse = apiService.getTeamStats(homeId);
+            CompletableFuture<ResponseEntity<String>> awayStatsResponse = apiService.getTeamStats(awayId);
+            CompletableFuture<ResponseEntity<String>> homeRecordsResponse = apiService.getTeamRecords(homeId);
+            CompletableFuture<ResponseEntity<String>> awayRecordsResponse = apiService.getTeamRecords(awayId);
 
-            this.jsonObjectMapper.parseTeamStatsAndRecords(homeStatsResponse, awayStatsResponse, homeRecordsResponse, awayRecordsResponse, competitorStats);
+            //await completion of all async requests
+            CompletableFuture.allOf(homeStatsResponse, awayStatsResponse, homeRecordsResponse, awayRecordsResponse).join();
+
+            this.jsonObjectMapper.parseTeamStatsAndRecords(
+                    homeStatsResponse.get(),
+                    awayStatsResponse.get(),
+                    homeRecordsResponse.get(),
+                    awayRecordsResponse.get(),
+                    competitorStats
+            );
+
+            log.info(Arrays.toString(competitorStats));
+
             log.info("Team statistics parsed and loaded into memory");
         } catch (JsonProcessingException e) {
             log.error("Error parsing JSON response: {}", e.getMessage());
+        } catch (ExecutionException | InterruptedException e) {
+            throw new RuntimeException(e);
         }
         return competitorStats;
     }
