@@ -29,12 +29,13 @@ script to initialize the database, and populate it with data from ESPN. This scr
 need to retry it if it fails. Sometimes, ESPN throttles requests or fails to respond to some since we are making a large
 amount. If the script fails multiple times, try increasing the BOXSCORE_REQUEST_DELAY_LEVEL in the `.env` file.
 7. Run `npm run export` to export the data from the database to a CSV file. This file will be used to train the machine learning model.
-8. Ensure that you have [Python](https://www.python.org/downloads/) installed by running `python --version
-9. Install the necessesary python dependences by running `pip install -r model/requirements.txt`
-10. Ensure that you have Java installed. Verify this by running `java -version` in your terminal.
-12. Resolve all dependencies for the Spring Boot application by running `./mvnw clean install`
-13. Run the resulting compiled Java application with `./mvnw spring-boot:run` or `java -jar target/football-forecaster-0.0.1-SNAPSHOT.jar`
-14. Use the web application by navigating to http://localhost:8080 in your browser
+9. Ensure that you have [Python](https://www.python.org/downloads/) installed by running `python --version
+10. Install the necessesary python dependences by running `pip install -r model/requirements.txt`
+11. Ensure that you have Java installed. Verify this by running `java -version` in your terminal.
+12. Make sure that in your IDE, the project is using JDK 21
+13. Resolve all dependencies for the Spring Boot application by running `./mvnw clean install`
+14. Run the resulting compiled Java application with `./mvnw spring-boot:run` or `java -jar target/football-forecaster-0.0.1-SNAPSHOT.jar`
+15. Use the web application by navigating to http://localhost:8080 in your browser
 
 If you need to retrain the model, delete `pipeline.pkl` in `/model` and rerun the application
 
