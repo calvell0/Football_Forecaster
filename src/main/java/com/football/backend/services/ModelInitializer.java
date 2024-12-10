@@ -21,7 +21,7 @@ public class ModelInitializer  {
     public void createSubprocess() throws Exception {
         ProcessBuilder pb = new ProcessBuilder();
         Path modelPath = Path.of(System.getProperty("user.dir")).resolve("model");
-        pb.command("python", "-m", "flask", "-A", "test_model.py", "run");
+        pb.command("python", "-m", "flask", "-A", "model.py", "run");
 
         pb.directory(modelPath.toFile());
         File log = new File(modelPath.resolve("logs/log.txt").toString());
