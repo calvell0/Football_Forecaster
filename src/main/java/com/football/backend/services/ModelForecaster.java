@@ -5,20 +5,13 @@ import java.io.IOException;
 import com.football.backend.models.CompetitorStats;
 import com.football.backend.models.OutcomeForecast;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.configurationprocessor.json.JSONArray;
 import org.springframework.boot.configurationprocessor.json.JSONException;
-import org.springframework.boot.configurationprocessor.json.JSONObject;
 import org.springframework.stereotype.Service;
 
-import java.nio.file.Files;
-import java.nio.file.Paths;
 
 @Service
 public class ModelForecaster {
 
-    static JSONObject scalerParams;
-    static float[] means;
-    static float[] scales;
     private final APIService apiService;
 
     @Autowired
@@ -26,15 +19,6 @@ public class ModelForecaster {
         this.apiService = apiService;
     }
 
-    static {
-        try {
-            scalerParams = new JSONObject(new String(Files.readAllBytes(Paths.get("src/main/resources/lr_model/scaler_params.json"))));
-            means = jsonArrayToFloatArray(scalerParams.getJSONArray("mean"));
-            scales = jsonArrayToFloatArray(scalerParams.getJSONArray("scale"));
-        } catch (IOException | JSONException e) {
-            throw new RuntimeException("Error reading scaler params: " + e.getMessage());
-        }
-    }
 
 
     public OutcomeForecast getPrediction(CompetitorStats[] competitors) throws IOException, JSONException {
@@ -43,15 +27,6 @@ public class ModelForecaster {
         return this.apiService.getPrediction(inputVector);
     }
 
-    public static float[] scaleInputVector(float[] input, float[] means, float[] scales) {
-
-        float[] scaled = new float[input.length];
-        for (int i = 0; i < input.length; i++) {
-            scaled[i] = (input[i] - means[i]) / scales[i];
-        }
-        return scaled;
-
-    }
 
     public static float[] createInputVector(CompetitorStats[] competitors) {
         if (competitors.length != 2) {
@@ -144,11 +119,4 @@ public class ModelForecaster {
         };
     }
 
-    public static float[] jsonArrayToFloatArray(JSONArray jsonArray) throws JSONException {
-        float[] floatArray = new float[jsonArray.length()];
-        for (int i = 0; i < jsonArray.length(); i++) {
-            floatArray[i] = (float) jsonArray.getDouble(i);
-        }
-        return floatArray;
-    }
 }
