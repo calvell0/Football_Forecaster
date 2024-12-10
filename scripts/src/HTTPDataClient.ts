@@ -115,7 +115,6 @@ export class HttpDataClient implements DataClient {
 
 
 
-    //TODO: FIX DELAY LOGIC
     private async reqDataWithRetries(url: string, index: number, retries: number = 3): Promise<AxiosResponse> {
         try {
             if (this.iterationsWithoutRetry < 25) await sleep(delays.AFTER_FAILED_REQUEST);

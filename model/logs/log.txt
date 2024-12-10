@@ -1,67 +1,7 @@
-Class Distribution:
-home_winner
-1    0.567404
-0    0.432596
-Name: proportion, dtype: float64
-      home_avg_first_downs  ...  away_overall_win_pct
-851              18.100000  ...              0.454545
-3816             16.200001  ...              0.833333
-3249             20.875000  ...              0.166667
-3307             21.299999  ...              0.727273
-1199             22.333334  ...              0.000000
-
-[5 rows x 70 columns]
-      home_winner  home_home_wins  ...  away_avg_punts  away_yards_per_punt
-1553            0               4  ...        3.416667            46.268291
-1523            1               4  ...        6.111111            45.927273
-991             0               0  ...        3.750000            45.666668
-0               1               1  ...        7.000000            37.857143
-2570            1               6  ...        4.000000            44.196430
-
-[5 rows x 83 columns]
-      home_avg_first_downs  ...  away_overall_win_pct
-512              16.750000  ...              0.500000
-3916             16.692308  ...              0.230769
-
-[2 rows x 70 columns]
-
-Classification Report:
-              precision    recall  f1-score   support
-
-           0       0.79      0.85      0.82       568
-           1       0.88      0.83      0.85       745
-
-    accuracy                           0.84      1313
-   macro avg       0.83      0.84      0.83      1313
-weighted avg       0.84      0.84      0.84      1313
-
-
-Confidence Levels:
-
-Feature Importance:
-                           feature  importance
-64               home_home_win_pct    1.359373
-67               away_away_win_pct    1.127315
-69            away_overall_win_pct    0.532826
-44       away_avg_rushing_attempts    0.447632
-66               away_home_win_pct    0.360979
-..                             ...         ...
-13     home_redzone_conversion_pct    0.012319
-59      away_yards_per_punt_return    0.010928
-53                away_avg_tackles    0.010852
-47          away_avg_penalty_yards    0.007805
-4   home_third_down_conversion_pct    0.000130
-
-[70 rows x 2 columns]
- * Serving Flask app 'test_model.py'
+Pipeline loaded from file system
+ * Serving Flask app 'model.py'
  * Debug mode: off
 WARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.
  * Running on http://127.0.0.1:5000
 Press CTRL+C to quit
-127.0.0.1 - - [09/Dec/2024 12:08:36] "POST /predict HTTP/1.1" 200 -
-127.0.0.1 - - [09/Dec/2024 12:09:04] "POST /predict HTTP/1.1" 200 -
-127.0.0.1 - - [09/Dec/2024 12:09:13] "POST /predict HTTP/1.1" 200 -
-127.0.0.1 - - [09/Dec/2024 12:09:21] "POST /predict HTTP/1.1" 200 -
-127.0.0.1 - - [09/Dec/2024 12:09:28] "POST /predict HTTP/1.1" 200 -
-127.0.0.1 - - [09/Dec/2024 12:09:34] "POST /predict HTTP/1.1" 200 -
-127.0.0.1 - - [09/Dec/2024 12:09:41] "POST /predict HTTP/1.1" 200 -
+127.0.0.1 - - [10/Dec/2024 12:42:42] "POST /predict HTTP/1.1" 200 -

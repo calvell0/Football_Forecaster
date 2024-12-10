@@ -73,7 +73,7 @@ function showGameDetails(date) {
         gamesForDate.forEach(game => {
             const gameElement = document.createElement('div');
             gameElement.classList.add('game-item');
-            gameElement.textContent = `${game.awayTeam.displayName} vs ${game.homeTeam.displayName}`;
+            gameElement.textContent = `${game.awayTeam.displayName} at ${game.homeTeam.displayName}`;
 
 
             gameElement.addEventListener('click', () => {

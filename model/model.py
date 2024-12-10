@@ -1,135 +1,161 @@
-import numpy as np
-from sklearn.linear_model import LogisticRegression
-from sklearn.preprocessing import StandardScaler
-from sklearn.model_selection import train_test_split
-import logging
-import joblib
+
+
 import pandas as pd
+import numpy as np
+from sklearn.model_selection import train_test_split
+from sklearn.linear_model import LogisticRegression
+from sklearn.metrics import accuracy_score, confusion_matrix, classification_report
+from sklearn.preprocessing import StandardScaler
+from sklearn.pipeline import Pipeline
+from flask import Flask, request
+import joblib as joblib
+from collections.abc import Iterable
+import matplotlib.pyplot as plt
+import seaborn as sns
 
-logger = logging.getLogger(__name__)
+SHOW_PLOTS = False
 
-class NFLPredictor:
-    def __init__(self, competitor_repository=None):
-        self.model = LogisticRegression(random_state=42)
-        self.competitor_repository = competitor_repository
-        self.scaler = StandardScaler()
+def plot_confusion_matrix(y_true, y_pred):
+    cm = confusion_matrix(y_true, y_pred)
+    plt.figure(figsize=(10, 7))
+    sns.heatmap(cm, annot=True, fmt='d', cmap='Blues')
+    plt.xlabel('Predicted')
+    plt.ylabel('Actual')
+    plt.title('Confusion Matrix')
+    plt.show()
 
-    def calculate_win_percentage(self, wins, losses):
-        total_games = wins + losses
-        return wins / total_games if total_games > 0 else 0.5
+def plot_accuracy_score(y_true, y_pred_proba, thresholds):
+    accuracies = [accuracy_score(y_true, (y_pred_proba[:, 1] >= t).astype(int)) for t in thresholds]
+    plt.figure(figsize=(10, 7))
+    plt.plot(thresholds, accuracies, marker='o')
+    plt.xlabel('Threshold')
+    plt.ylabel('Accuracy')
+    plt.title('Accuracy Score vs. Threshold')
+    plt.grid(True)
+    plt.show()
 
-    def train(self, data_path, save_model_path=None):
-        try:
-            # Load and preprocess data
-            df = pd.read_csv(data_path)
+EXPECTED_COLS_COUNT = 0
+ORIG_FEATURE_NAMES = []
 
-            # Handle any missing values or infinities
-            df = df.fillna(0)
+def replace_record_with_win_pct(df: pd.DataFrame):
+    df['home_home_win_pct'] = df['home_home_wins'] / (df['home_home_wins'] + df['home_home_losses']).replace({0: 0.5})
+    df['home_away_win_pct'] = df['home_away_wins'] / (df['home_away_wins'] + df['home_away_losses']).replace({0: 0.5})
+    df['away_home_win_pct'] = df['away_home_wins'] / (df['away_home_wins'] + df['away_home_losses']).replace({0: 0.5})
+    df['away_away_win_pct'] = df['away_away_wins'] / (df['away_away_wins'] + df['away_away_losses']).replace({0: 0.5})
+    df['home_overall_win_pct'] = df['home_total_wins'] / (df['home_total_wins'] + df['home_total_losses']).replace({0: 0.5})
+    df['away_overall_win_pct'] = df['away_total_wins'] / (df['away_total_wins'] + df['away_total_losses']).replace({0: 0.5})
 
-            # Extract features
-            feature_columns = [
-                'home_total_wins', 'home_total_losses',
-                'away_total_wins', 'away_total_losses',
-                'home_win_pct', 'away_win_pct'
-            ]
+    df.drop(columns=['home_home_wins', 'home_home_losses', 'home_away_wins', 'home_away_losses', 'away_home_wins', 'away_home_losses', 'away_away_wins', 'away_away_losses', 'home_total_wins', 'home_total_losses', 'away_total_wins', 'away_total_losses'], inplace=True)
+    return df
 
-            X = df[feature_columns]
-            y = df['home_winner']
+def load_data():
+    global ORIG_FEATURE_NAMES
+    df = pd.read_csv("./training_data/training_data.csv")
+    df.drop(columns="event_id", inplace=True)
 
-            # Split data
-            X_train, X_test, y_train, y_test = train_test_split(
-                X, y, test_size=0.2, random_state=42
-            )
+    print("Class Distribution:")
+    print(df['home_winner'].value_counts(normalize=True))
 
-            # Scale features
-            X_train_scaled = self.scaler.fit_transform(X_train)
-            X_test_scaled = self.scaler.transform(X_test)
+    X = df.drop(['home_winner', 'home_avg_tackles_for_loss',
+                 'away_avg_tackles_for_loss', 'home_avg_drives',
+                 'away_avg_drives', 'home_completion_pct', 'away_completion_pct'], axis=1)
+    y = df['home_winner']
+    ORIG_FEATURE_NAMES = X.columns
 
-            # Train model
-            self.model.fit(X_train_scaled, y_train)
+    X = replace_record_with_win_pct(X)
+    print(X.sample(5))
 
-            # Evaluate model
-            train_score = self.model.score(X_train_scaled, y_train)
-            test_score = self.model.score(X_test_scaled, y_test)
+    X_train, X_test, y_train, y_test = train_test_split(
+        X, y, test_size=0.33, random_state=12, stratify=y)
 
-            logger.info(f"Model Training Complete:")
-            logger.info(f"Training accuracy: {train_score:.3f}")
-            logger.info(f"Testing accuracy: {test_score:.3f}")
+    print(df.sample(5))
 
-            if save_model_path:
-                self.save_model(save_model_path)
+    return X_train, X_test, y_train, y_test, X
 
-            return train_score, test_score
 
-        except Exception as e:
-            logger.error(f"Error training model: {str(e)}")
-            logger.error("Stack trace:", exc_info=True)
-            raise
+def create_pipeline():
+    global EXPECTED_COLS_COUNT
+    X_train, X_test, y_train, y_test, X = load_data()
 
-    def predict_game(self, home_team_id, away_team_id):
-        try:
-            home_competitor = self.competitor_repository.findLatestByTeamId(home_team_id)
-            away_competitor = self.competitor_repository.findLatestByTeamId(away_team_id)
+    model = Pipeline([
 
-            if not home_competitor.isPresent() or not away_competitor.isPresent():
-                logger.warn(f"Missing competitor data for teams {home_team_id} and/or {away_team_id}")
-                return (True, 0.5)
+        ('scaler', StandardScaler()),
+        ('classifier', LogisticRegression(
+            max_iter=1000,
+            C=0.1,
+            class_weight='balanced'
+        ))
+    ])
 
-            home_competitor = home_competitor.get()
-            away_competitor = away_competitor.get()
+    print(X_test.sample(2))
 
-            # Calculate win percentages safely
-            home_win_pct = self.calculate_win_percentage(
-                home_competitor.getTotalWins(),
-                home_competitor.getTotalLosses()
-            )
-            away_win_pct = self.calculate_win_percentage(
-                away_competitor.getTotalWins(),
-                away_competitor.getTotalLosses()
-            )
 
-            features = np.array([[
-                home_competitor.getTotalWins(),
-                home_competitor.getTotalLosses(),
-                away_competitor.getTotalWins(),
-                away_competitor.getTotalLosses(),
-                home_win_pct,
-                away_win_pct
-            ]])
+    model.fit(X_train, y_train)
 
-            features_scaled = self.scaler.transform(features)
-            prob = self.model.predict_proba(features_scaled)[0]
-            home_win_prob = prob[1]
+    y_pred = model.predict(X_test)
+    y_prob = model.predict_proba(X_test)
 
-            logger.info(f"Home team record: {home_competitor.getTotalWins()}-{home_competitor.getTotalLosses()}")
-            logger.info(f"Away team record: {away_competitor.getTotalWins()}-{away_competitor.getTotalLosses()}")
-            logger.info(f"Prediction probabilities: {prob}")
+    if SHOW_PLOTS:
+        plot_confusion_matrix(y_test, y_pred)
+        thresholds = np.arange(0.0, 1.1, 0.1)
+        plot_accuracy_score(y_test, y_prob, thresholds)
 
-            return (home_win_prob > 0.5, max(home_win_prob, 1 - home_win_prob))
+    print("\nClassification Report:")
+    print(classification_report(y_test, y_pred))
 
-        except Exception as e:
-            logger.error(f"Error predicting game outcome: {str(e)}")
-            logger.error("Stack trace:", exc_info=True)
-            return (True, 0.5)
+    print("\nConfidence Levels:")
+    for true, pred, prob in zip(y_test, y_pred, y_prob):
+        max_prob = max(prob)
+        # print(f"True: {true}, Predicted: {pred}, Confidence: {max_prob:.4f}")
 
-    def save_model(self, path):
-        try:
-            model_data = {
-                'model': self.model,
-                'scaler': self.scaler
-            }
-            joblib.dump(model_data, path)
-            logger.info(f"Model saved to {path}")
-        except Exception as e:
-            logger.error(f"Error saving model: {str(e)}")
-            raise
+    feature_importance = pd.DataFrame({
+        'feature': X.columns,
+        'importance': np.abs(model.named_steps['classifier'].coef_[0])
+    })
+    feature_importance = feature_importance.sort_values('importance', ascending=False)
+    print("\nFeature Importance:")
+    print(feature_importance)
+    EXPECTED_COLS_COUNT = len(X.columns)
 
-    def load_model(self, path):
-        try:
-            model_data = joblib.load(path)
-            self.model = model_data['model']
-            self.scaler = model_data['scaler']
-            logger.info(f"Model loaded from {path}")
-        except Exception as e:
-            logger.error(f"Error loading model: {str(e)}")
-            raise
+
+
+    return model
+
+def persist_pipeline(model_obj):
+    joblib.dump(model_obj, 'pipeline.pkl')
+
+
+
+
+app = Flask(__name__)
+
+try:
+    model_info = joblib.load('pipeline.pkl')
+    pipeline = model_info['model']
+    ORIG_FEATURE_NAMES = model_info['orig_features']
+    print("Pipeline loaded from file system")
+except FileNotFoundError:
+    pipeline = create_pipeline()
+    persist_pipeline({ 'model': pipeline, 'orig_features': ORIG_FEATURE_NAMES })
+
+feature_names = pipeline.feature_names_in_
+
+@app.post('/predict')
+def get_prediction():
+    input_vector = request.json
+    if input_vector is None or not isinstance(input_vector, Iterable) or len(input_vector) != 76:
+        return "Invalid input vector", 400
+    input_df = pd.DataFrame([input_vector], columns=ORIG_FEATURE_NAMES)
+    input_df = replace_record_with_win_pct(input_df)
+
+    prediction = pipeline.predict(input_df).tolist()[0]
+    probability = pipeline.predict_proba(input_df).tolist()
+    probability = max(probability[0])
+    print(f"Prediction: {prediction}, Probability: {probability}")
+    return {
+        'outcome': prediction,
+        'confidence': probability
+    }
+
+
+

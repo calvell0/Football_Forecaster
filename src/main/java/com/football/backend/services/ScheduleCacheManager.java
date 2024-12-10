@@ -49,12 +49,9 @@ public class ScheduleCacheManager {
             log.error("Thread interrupted while waiting for cache update");
         }
 
-
-
         if (this.cache.isStale()) {
             log.info("Cache miss. Refreshing cache");
             this.cacheUpdater.updateCache(latch);
-            log.info("continuing execution of main thread");
         } else log.info("Cache hit");
 
 
