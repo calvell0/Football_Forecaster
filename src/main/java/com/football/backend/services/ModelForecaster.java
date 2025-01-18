@@ -4,6 +4,8 @@ import java.io.IOException;
 
 import com.football.backend.models.CompetitorStats;
 import com.football.backend.models.OutcomeForecast;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.configurationprocessor.json.JSONException;
 import org.springframework.stereotype.Service;
@@ -11,6 +13,8 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class ModelForecaster {
+
+    private final static Logger LOG = LoggerFactory.getLogger(ModelForecaster.class);
 
     private final APIService apiService;
 
@@ -23,6 +27,7 @@ public class ModelForecaster {
 
     public OutcomeForecast getPrediction(CompetitorStats[] competitors) throws IOException, JSONException {
         float[] inputVector = createInputVector(competitors);
+        LOG.info("Competitors: team1: {}, team2: {}", competitors[0].toString(), competitors[1].toString());
         //inputVector = scaleInputVector(inputVector, means, scales);
         return this.apiService.getPrediction(inputVector);
     }

@@ -48,13 +48,13 @@ public class WebController {
     @GetMapping("/")
     public String home (Model model) {
         List<Team> teams = teamRepository.findAll(Sort.by(Sort.Order.asc("id")));
-
         List<NFLEvent> scheduledEvents = this.cacheManager.getScheduledEvents();
         List<Logo> logos = logoRepository.findAll();
-        LOG.info(scheduledEvents.getFirst().toString());
+
         model.addAttribute("teams", teams);
         model.addAttribute("logos", logos);
         model.addAttribute("scheduledEvents", scheduledEvents);
+
         return "index";
     }
 
@@ -94,7 +94,7 @@ public class WebController {
         } catch (IOException | JSONException e) {
             throw new RuntimeException(e);
         }
-        BigDecimal confidence = new BigDecimal(prediction.getConfidence() * 100).setScale(2, RoundingMode.HALF_UP);
+        BigDecimal confidence = BigDecimal.valueOf(prediction.getConfidence() * 100).setScale(2, RoundingMode.HALF_UP);
 
         model.addAttribute("homeTeam", home);
         model.addAttribute("awayTeam", away);

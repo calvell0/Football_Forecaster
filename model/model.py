@@ -13,7 +13,7 @@ from collections.abc import Iterable
 import matplotlib.pyplot as plt
 import seaborn as sns
 
-SHOW_PLOTS = False
+SHOW_PLOTS = True
 
 def plot_confusion_matrix(y_true, y_pred):
     cm = confusion_matrix(y_true, y_pred)
@@ -32,6 +32,14 @@ def plot_accuracy_score(y_true, y_pred_proba, thresholds):
     plt.ylabel('Accuracy')
     plt.title('Accuracy Score vs. Threshold')
     plt.grid(True)
+    plt.show()
+
+def plot_feature_importance(feature_importance):
+    plt.figure(figsize=(10, 8))
+    sns.barplot(x='importance', y='feature', data=feature_importance)
+    plt.title('Feature Importances')
+    plt.xlabel('Importance')
+    plt.ylabel('Feature')
     plt.show()
 
 EXPECTED_COLS_COUNT = 0
@@ -95,10 +103,17 @@ def create_pipeline():
     y_pred = model.predict(X_test)
     y_prob = model.predict_proba(X_test)
 
+    feature_importance = pd.DataFrame({
+        'feature': X.columns,
+        'importance': np.abs(model.named_steps['classifier'].coef_[0])
+    })
+    feature_importance = feature_importance.sort_values('importance', ascending=False)
+
     if SHOW_PLOTS:
         plot_confusion_matrix(y_test, y_pred)
         thresholds = np.arange(0.0, 1.1, 0.1)
         plot_accuracy_score(y_test, y_prob, thresholds)
+        plot_feature_importance(feature_importance)
 
     print("\nClassification Report:")
     print(classification_report(y_test, y_pred))
@@ -108,13 +123,6 @@ def create_pipeline():
         max_prob = max(prob)
         # print(f"True: {true}, Predicted: {pred}, Confidence: {max_prob:.4f}")
 
-    feature_importance = pd.DataFrame({
-        'feature': X.columns,
-        'importance': np.abs(model.named_steps['classifier'].coef_[0])
-    })
-    feature_importance = feature_importance.sort_values('importance', ascending=False)
-    print("\nFeature Importance:")
-    print(feature_importance)
     EXPECTED_COLS_COUNT = len(X.columns)
 
 

@@ -1,10 +1,17 @@
 # Football Forecaster
 
-#### Project Team 4
+Football Forecaster is a web application that predicts the outcome of football matches based on historical data.
+The application uses a machine learning model to predict the outcome of football matches. 
+The model is trained on historical NFL data from ESPN's API.
 
-### Overview
+![img.png](img.png)
 
-Football forecaster is a web application that predicts the outcome of football matches based on historical data. The application uses a machine learning model to predict the outcome of football matches. The model is trained on historical NFL data from ESPN's API.
+### Structural Overview
+
+Football Forecaster consists of three main components:
+1. A TypeScript-based ETL pipeline that fetches data from ESPN's API transforms it, and stores it in a MySQL database
+2. A Python-based Flask microservice that trains and queries a logistic regression model to predict the outcome of football matches
+3. A Java/Spring Boot backend that serves the HTML/CSS/JS frontend and interfaces with ESPN's API to fetch real-time team stats and query the Flask microservice
 
 ### Setup + Running
 

@@ -35,7 +35,7 @@ public class DataService {
         this.mappedCompetitors = new ArrayList<>(ESTIMATED_NUM_OF_EVENTS * 2); // 2 competitors for each event
     }
 
-    public List<NFLEvent> getMappedEvents() {
+    public List<NFLEvent> getEvents() {
         return this.mappedEvents;
     }
 
@@ -43,7 +43,7 @@ public class DataService {
         return mappedCompetitors;
     }
 
-    public void updateScheduleData(){
+    public void updateEvents(){
         try {
             ResponseEntity<String> response = apiService.getNFLEventData();
             List<NFLEvent> newMappedEvents = new ArrayList<>(ESTIMATED_NUM_OF_EVENTS);

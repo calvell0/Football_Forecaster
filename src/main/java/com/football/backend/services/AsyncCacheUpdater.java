@@ -33,10 +33,10 @@ public class AsyncCacheUpdater {
     @Async
     public void updateCache(CountDownLatch latch) {
         try {
-            dataService.updateScheduleData();
+            dataService.updateEvents();
             ZonedDateTime now = ZonedDateTime.now();
 
-            var scheduledEvents = dataService.getMappedEvents()
+            var scheduledEvents = dataService.getEvents()
                     .stream()
                     .filter(event -> eventDateIsAfterNow(event, now))
                     .toList();

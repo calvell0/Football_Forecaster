@@ -21,25 +21,14 @@ public class ScheduleCacheManager {
     private final ScheduleCache cache;
     private final AsyncCacheUpdater cacheUpdater;
 
-    //CountDownLatch allows us to create a lock over the cache once, on the initial update
+    //CountDownLatch allows us to create a lock over the cache once, on initialization
     private final CountDownLatch latch = new CountDownLatch(1);
-
 
     @Autowired
     public ScheduleCacheManager(ScheduleCache cache, AsyncCacheUpdater cacheUpdater) {
         this.cache = cache;
         this.cacheUpdater = cacheUpdater;
     }
-
-    /**
-     * initializes the cache data if it doesn't exist or is out-of-date
-     */
-    public void initCache() {
-        if (this.cache.isStale() || this.cache.getScheduledEvents() == null) {
-            this.cacheUpdater.updateCache(this.latch);
-        }
-    }
-
 
     public List<NFLEvent> getScheduledEvents() {
         try {
@@ -56,6 +45,15 @@ public class ScheduleCacheManager {
 
 
         return this.cache.getScheduledEvents();
+    }
+
+    /**
+     * initializes the cache data if it doesn't exist or is out-of-date
+     */
+    public void initCache() {
+        if (this.cache.isStale() || this.cache.getScheduledEvents() == null) {
+            this.cacheUpdater.updateCache(this.latch);
+        }
     }
 
 
