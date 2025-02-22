@@ -306,24 +306,6 @@ export class DataService {
             }, {});
     }
 
-    // private static parseStatistics(player: any, eventId: number): Boxscore {
-    //     const stats = new Map();
-    //     let totalStats = 0;
-    //     let isNotFirstIter : 0 | 1 = 0;
-    //
-    //     //statistics are contained in an array of values, and an array that maps statistic
-    //     //names to indexes in the values array
-    //     const totals: string[] = player.statistics.flatMap((statistic: any) => {
-    //         for (const index in statistic.keys){
-    //             stats.set(statistic.keys[index], parseInt(index) + (totalStats++ * isNotFirstIter));
-    //         }
-    //         isNotFirstIter = 1;
-    //         return statistic.totals;
-    //     });
-    //
-    //
-    // }
-
     /**
      * maps team statistic names to functions that parse their values, then sets their corresponding property
      * in `boxscore`

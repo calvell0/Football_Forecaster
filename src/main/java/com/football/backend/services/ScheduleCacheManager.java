@@ -32,7 +32,7 @@ public class ScheduleCacheManager {
 
     public List<NFLEvent> getScheduledEvents() {
         try {
-            this.latch.await(); //block until cache is initialized
+            this.latch.await();
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
             log.error("Thread interrupted while waiting for cache update");
@@ -46,6 +46,8 @@ public class ScheduleCacheManager {
 
         return this.cache.getScheduledEvents();
     }
+
+
 
     /**
      * initializes the cache data if it doesn't exist or is out-of-date

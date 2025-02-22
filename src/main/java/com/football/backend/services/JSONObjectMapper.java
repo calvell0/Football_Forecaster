@@ -54,7 +54,6 @@ public class JSONObjectMapper {
                     continue;
                 }
 
-                // Extract event data
                 int id = event.get("id").asInt();
                 String uid = event.get("uid").asText();
                 // Convert the date string to LocalDateTime
@@ -237,10 +236,10 @@ public class JSONObjectMapper {
                 try {
                     Method method = CompetitorStats.class.getMethod(statMappings.get(statName), float.class);
                     float value = stat.get("value").floatValue();
-                    if (proportionStats.contains(statName)) { //these stats need to be converted to a proportion
+                    if (proportionStats.contains(statName)) {
                         value /= 100;
                     }
-                    else if (averageStats.contains(statName)) { //these stats need to be averaged over the num of games played
+                    else if (averageStats.contains(statName)) {
                         value /= gamesPlayed;
                     }
 
