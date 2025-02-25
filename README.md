@@ -13,6 +13,8 @@ Football Forecaster consists of three main components:
 2. A Python-based Flask microservice that trains and queries a logistic regression model to predict the outcome of football matches
 3. A Java/Spring Boot backend that serves the HTML/CSS/JS frontend and interfaces with ESPN's API to fetch real-time team stats and query the Flask microservice
 
+Football Forecaster was a senior capstone project. The goal was to get more hands-on experience with a wide array of technologies, so it's deliberately a little overengineered.
+
 ### Setup + Running
 
 1. Clone this repository
@@ -37,7 +39,7 @@ need to retry it if it fails. Sometimes, ESPN throttles requests or fails to res
 amount. If the script fails multiple times, try increasing the BOXSCORE_REQUEST_DELAY_LEVEL in the `.env` file.
 7. Run `npm run export` to export the data from the database to a CSV file. This file will be used to train the machine learning model.
 9. Ensure that you have [Python](https://www.python.org/downloads/) installed by running `python --version
-10. Install the necessesary python dependences by running `pip install -r model/requirements.txt`
+10. Install the necessary python dependencies by running `pip install -r model/requirements.txt`
 11. Ensure that you have Java installed. Verify this by running `java -version` in your terminal.
 12. Make sure that in your IDE, the project is using JDK 21
 13. Resolve all dependencies for the Spring Boot application by running `./mvnw clean install`
