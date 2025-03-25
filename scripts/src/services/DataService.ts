@@ -9,7 +9,7 @@ import {performance} from "perf_hooks";
 
 
 export class DataService {
-    private readonly NUM_YEARS_BACK = 16; // data gets funky and inconsistent more than 16 years back
+    private readonly NUM_YEARS_BACK = 2; // data gets funky and inconsistent more than 16 years back
     private readonly ESTIMATED_EVENTS_PER_YEAR = 375;
     private readonly ESTIMATED_NUM_BOXSCORES = this.NUM_YEARS_BACK * this.ESTIMATED_EVENTS_PER_YEAR;
     private dataClient: DataClient;
