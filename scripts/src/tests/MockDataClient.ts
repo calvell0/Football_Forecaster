@@ -1,7 +1,7 @@
 import {DataClient} from "../models/DataClient.js";
-import boxscore from "./test_data/boxscore.json" assert {type: "json"};
-import events from "./test_data/events.json" assert {type: "json"};
-import teams from "./test_data/teams.json" assert {type: "json"};
+import boxscore from "./test_data/boxscore.json" with {type: "json"};
+import events from "./test_data/events.json" with {type: "json"};
+import teams from "./test_data/teams.json" with {type: "json"};
 
 const testDataDir = "file://scripts/src/tests/test_data";
 
