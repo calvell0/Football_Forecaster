@@ -1,3 +1,8 @@
+# Some updates: 
+I'm currently rewriting Football Forecaster from the ground up! This repo is outdated and a new one will be linked to from here when it's ready. 
+
+
+
 # Football Forecaster
 
 Football Forecaster is a web application that predicts the outcome of football matches based on historical data.
